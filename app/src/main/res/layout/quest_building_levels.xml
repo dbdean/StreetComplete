@@ -67,7 +67,9 @@
             android:maxLines="1"
             android:nextFocusDown="@+id/roofLevelsInput"
             android:focusable="true"
-            tools:ignore="RtlHardcoded"/>
+            tools:ignore="RtlHardcoded">
+            <requestFocus/>
+        </EditText>
 
     </RelativeLayout>
 
