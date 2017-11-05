@@ -135,7 +135,8 @@ public class AddCycleway implements OsmElementQuestType
 		return overpassServer.getAndHandleQuota(getOverpassQuery(bbox), handler);
 	}
 
-	/** @return overpass query string to get streets without cycleway info not near paths roads that don't have names */
+	/** @return overpass query string to get streets without cycleway info not near paths for
+	 *  bicycles. */
 	private static String getOverpassQuery(BoundingBox bbox)
 	{
 		int d = MIN_DIST_TO_CYCLEWAYS;
@@ -159,4 +160,5 @@ public class AddCycleway implements OsmElementQuestType
 	@Override public int getIcon() { return R.drawable.ic_quest_bicycleway; }
 	@Override public int getTitle(@NonNull Map<String, String> tags) { return getTitle(); }
 	@Override public int getTitle() { return R.string.quest_cycleway_title; }
+	@Override public boolean isDefaultEnabled()	{ return true; }
 }

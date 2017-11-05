@@ -10,12 +10,12 @@ import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.preference.PreferenceManager;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -82,6 +82,8 @@ public class MapFragment extends Fragment implements
 
 	private boolean isShowingDirection;
 
+	private boolean isMapInitialized;
+
 	private Listener listener;
 	public interface Listener
 	{
@@ -92,6 +94,8 @@ public class MapFragment extends Fragment implements
 									   Bundle savedInstanceState)
 	{
 		View view = inflater.inflate(R.layout.fragment_map, container, false);
+
+		isMapInitialized = false;
 
 		mapView = view.findViewById(R.id.map);
 		TextView mapzenLink = view.findViewById(R.id.mapzenLink);
@@ -108,8 +112,10 @@ public class MapFragment extends Fragment implements
 	@Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState)
 	{
 		super.onViewCreated(view, savedInstanceState);
-		mapControls = (MapControlsFragment) getChildFragmentManager().findFragmentById(R.id.controls_fragment);
-		mapControls.setMapFragment(this);
+		if(savedInstanceState == null)
+		{
+			getChildFragmentManager().beginTransaction().add(R.id.controls_fragment, new MapControlsFragment()).commit();
+		}
 	}
 
 	/* --------------------------------- Map and Location --------------------------------------- */
@@ -135,11 +141,27 @@ public class MapFragment extends Fragment implements
 		restoreMapState();
 
 		compass.setListener(this);
-		mapControls.onMapInitialized();
+
+		isMapInitialized = true;
+		tryInitializeMapControls();
 
 		controller.loadSceneFile(sceneFilePath);
 	}
 
+	public void onMapControlsCreated(MapControlsFragment mapControls)
+	{
+		this.mapControls = mapControls;
+		tryInitializeMapControls();
+	}
+
+	private void tryInitializeMapControls()
+	{
+		if(isMapInitialized && mapControls != null)
+		{
+			mapControls.onMapInitialized();
+			mapControls.onMapOrientation(controller.getRotation(), controller.getTilt());
+		}
+	}
 
 	@CallSuper @Override public void onSceneReady(int sceneId, SceneError sceneError)
 	{
@@ -335,7 +357,7 @@ public class MapFragment extends Fragment implements
 
 	private void onMapOrientation(float rotation, float tilt)
 	{
-		mapControls.onMapOrientation(rotation, tilt);
+		if(mapControls != null) mapControls.onMapOrientation(rotation, tilt);
 		listener.onMapOrientation(rotation, tilt);
 	}
 
@@ -357,7 +379,7 @@ public class MapFragment extends Fragment implements
 	{
 		if(isFollowingPosition)
 		{
-			if(mapControls.requestUnglueViewFromPosition())
+			if(mapControls == null || mapControls.requestUnglueViewFromPosition())
 			{
 				setIsFollowingPosition(false);
 				setCompassMode(false);
@@ -372,7 +394,7 @@ public class MapFragment extends Fragment implements
 	{
 		if(isCompassMode)
 		{
-			if(mapControls.requestUnglueViewFromRotation())
+			if(mapControls == null || mapControls.requestUnglueViewFromRotation())
 			{
 				setCompassMode(false);
 				return true;
@@ -506,8 +528,6 @@ public class MapFragment extends Fragment implements
 
 		setIsFollowingPosition(prefs.getBoolean(PREF_FOLLOWING, true));
 		setCompassMode(prefs.getBoolean(PREF_COMPASS_MODE, false));
-
-		onMapOrientation();
 	}
 
 	private void saveMapState()

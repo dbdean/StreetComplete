@@ -1,7 +1,7 @@
 package de.westnordost.streetcomplete;
 
 import android.animation.ObjectAnimator;
-import android.app.FragmentManager;
+import android.support.v4.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,12 +16,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.annotation.AnyThread;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +37,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -45,7 +47,7 @@ import javax.inject.Inject;
 import de.westnordost.osmapi.common.errors.OsmApiReadResponseException;
 import de.westnordost.osmapi.common.errors.OsmAuthorizationException;
 import de.westnordost.osmapi.common.errors.OsmConnectionException;
-import de.westnordost.streetcomplete.about.AboutActivity;
+import de.westnordost.streetcomplete.about.AboutFragment;
 import de.westnordost.streetcomplete.data.Quest;
 import de.westnordost.streetcomplete.data.QuestAutoSyncer;
 import de.westnordost.streetcomplete.data.upload.QuestChangesUploadProgressListener;
@@ -284,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements
 		Element element = questController.getOsmElement(quest);
 
 		View inner = LayoutInflater.from(this).inflate(
-				R.layout.undo_dialog_layout, null, false);
+				R.layout.dialog_undo, null, false);
 		ImageView icon = inner.findViewById(R.id.icon);
 		icon.setImageResource(quest.getType().getIcon());
 		TextView text = inner.findViewById(R.id.text);
@@ -320,6 +322,7 @@ public class MainActivity extends AppCompatActivity implements
 	@Override public boolean onOptionsItemSelected(MenuItem item)
 	{
 		int id = item.getItemId();
+		Intent intent;
 
 		switch (id)
 		{
@@ -329,11 +332,13 @@ public class MainActivity extends AppCompatActivity implements
 				else              Toast.makeText(this, R.string.no_changes_to_undo, Toast.LENGTH_SHORT).show();
 				return true;
 			case R.id.action_settings:
-				Intent intent = new Intent(this, SettingsActivity.class);
+				intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
 				return true;
 			case R.id.action_about:
-				startActivity(new Intent(this, AboutActivity.class));
+				intent = new Intent(this, FragmentContainerActivity.class);
+				intent.putExtra(FragmentContainerActivity.EXTRA_FRAGMENT_CLASS, AboutFragment.class.getName());
+				startActivity(intent);
 				return true;
 			case R.id.action_download:
 				if(isConnected()) downloadDisplayedArea();
@@ -366,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements
 		if(dontShowRequestAuthorizationAgain) return;
 
 		View inner = LayoutInflater.from(this).inflate(
-				R.layout.authorize_now_dialog_layout, null, false);
+				R.layout.dialog_authorize_now, null, false);
 		final CheckBox checkBox = inner.findViewById(R.id.checkBoxDontShowAgain);
 
 		new AlertDialogBuilder(this)
@@ -610,10 +615,10 @@ public class MainActivity extends AppCompatActivity implements
 		});
 	}
 
-	@Override public void onLeaveNote(long questId, QuestGroup group, String questTitle, String note)
+	@Override public void onLeaveNote(long questId, QuestGroup group, String questTitle, String note, ArrayList<String> imagePaths)
 	{
 		closeQuestDetailsFor(questId, group);
-		questController.createNote(questId, questTitle, note);
+		questController.createNote(questId, questTitle, note, imagePaths);
 	}
 
 	@Override public void onSkippedQuest(long questId, QuestGroup group)
@@ -727,7 +732,7 @@ public class MainActivity extends AppCompatActivity implements
 			inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
 		}
 
-		getFragmentManager().popBackStackImmediate(BOTTOM_SHEET, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		getSupportFragmentManager().popBackStackImmediate(BOTTOM_SHEET, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
 		mapFragment.removeQuestGeometry();
 	}
@@ -783,7 +788,7 @@ public class MainActivity extends AppCompatActivity implements
 		args.putFloat(AbstractQuestAnswerFragment.ARG_MAP_TILT, mapTilt);
 		f.setArguments(args);
 
-		android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.setCustomAnimations(
 				R.animator.quest_answer_form_appear, R.animator.quest_answer_form_disappear,
 				R.animator.quest_answer_form_appear, R.animator.quest_answer_form_disappear);
@@ -794,7 +799,7 @@ public class MainActivity extends AppCompatActivity implements
 
 	private AbstractQuestAnswerFragment getQuestDetailsFragment()
 	{
-		return (AbstractQuestAnswerFragment) getFragmentManager().findFragmentByTag(BOTTOM_SHEET);
+		return (AbstractQuestAnswerFragment) getSupportFragmentManager().findFragmentByTag(BOTTOM_SHEET);
 	}
 
 	@Override public void onMapOrientation(float rotation, float tilt)

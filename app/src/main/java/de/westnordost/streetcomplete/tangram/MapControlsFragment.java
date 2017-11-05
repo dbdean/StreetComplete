@@ -22,7 +22,6 @@ import com.mapzen.android.lost.api.LocationRequest;
 import javax.inject.Inject;
 
 import de.westnordost.streetcomplete.Injector;
-import de.westnordost.streetcomplete.Prefs;
 import de.westnordost.streetcomplete.R;
 import de.westnordost.streetcomplete.location.LocationRequestFragment;
 import de.westnordost.streetcomplete.location.LocationState;
@@ -61,12 +60,13 @@ public class MapControlsFragment extends Fragment
 	{
 		super.onCreate(savedInstanceState);
 		Injector.instance.getApplicationComponent().inject(this);
+		mapFragment = (MapFragment) getParentFragment();
 	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
 									   Bundle savedInstanceState)
 	{
-		View view = inflater.inflate(R.layout.map_controls, container, false);
+		View view = inflater.inflate(R.layout.fragment_map_controls, container, false);
 		compassNeedle = view.findViewById(R.id.compassNeedle);
 
 		view.findViewById(R.id.compass).setOnClickListener(new View.OnClickListener()
@@ -141,6 +141,12 @@ public class MapControlsFragment extends Fragment
 		return view;
 	}
 
+	@Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState)
+	{
+		super.onViewCreated(view, savedInstanceState);
+		mapFragment.onMapControlsCreated(this);
+	}
+
 	@Override public void onStart()
 	{
 		super.onStart();
@@ -158,17 +164,10 @@ public class MapControlsFragment extends Fragment
 		super.onStop();
 
 		getContext().unregisterReceiver(locationAvailabilityReceiver);
-
-		LocalBroadcastManager.getInstance(getContext()).registerReceiver(locationRequestFinishedReceiver,
-				new IntentFilter(LocationRequestFragment.ACTION_FINISHED));
+		LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(locationRequestFinishedReceiver);
 	}
 
 	/* ------------------------ Calls from the MapFragment ------------------------ */
-
-	public void setMapFragment(MapFragment mapFragment)
-	{
-		this.mapFragment = mapFragment;
-	}
 
 	public void onMapOrientation(float rotation, float tilt)
 	{

@@ -1,8 +1,8 @@
 package de.westnordost.streetcomplete.quests;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -38,7 +38,7 @@ import de.westnordost.streetcomplete.Injector;
 import de.westnordost.streetcomplete.R;
 import de.westnordost.streetcomplete.data.QuestGroup;
 import de.westnordost.streetcomplete.data.QuestType;
-import de.westnordost.streetcomplete.data.QuestTypes;
+import de.westnordost.streetcomplete.data.QuestTypeRegistry;
 import de.westnordost.streetcomplete.data.meta.CountryInfo;
 import de.westnordost.streetcomplete.data.meta.CountryInfos;
 import de.westnordost.streetcomplete.data.osm.ElementGeometry;
@@ -56,7 +56,7 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 			ARG_MAP_TILT = "map_tilt";
 
 	@Inject CountryInfos countryInfos;
-	@Inject QuestTypes questTypes;
+	@Inject QuestTypeRegistry questTypeRegistry;
 
 	private TextView title;
 	private ViewGroup content;
@@ -93,12 +93,12 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 	{
 		osmElement = (OsmElement) getArguments().getSerializable(ARG_ELEMENT);
 		elementGeometry = (ElementGeometry) getArguments().getSerializable(ARG_GEOMETRY);
-		questType = questTypes.forName(getArguments().getString(ARG_QUESTTYPE));
+		questType = questTypeRegistry.getByName(getArguments().getString(ARG_QUESTTYPE));
 		countryInfo = null;
 		initialMapRotation = getArguments().getFloat(ARG_MAP_ROTATION);
 		initialMapTilt = getArguments().getFloat(ARG_MAP_TILT);
 
-		View view = inflater.inflate(R.layout.quest_answer_fragment, container, false);
+		View view = inflater.inflate(R.layout.fragment_quest_answer, container, false);
 
 		bottomSheet = view.findViewById(R.id.bottomSheet);
 		bottomSheet.addOnLayoutChangeListener(new View.OnLayoutChangeListener()
@@ -246,7 +246,7 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 		String questTitle = getEnglishResources().getString(getQuestTitleResId(), getElementName());
 		leaveNoteArgs.putString(LeaveNoteDialog.ARG_QUEST_TITLE, questTitle);
 		leaveNote.setArguments(leaveNoteArgs);
-		leaveNote.show(getFragmentManager(), null);
+		leaveNote.show(getActivity().getSupportFragmentManager(), null);
 	}
 
 	private Resources getEnglishResources()
@@ -263,6 +263,7 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 	{
 		if (!hasChanges())
 		{
+			onDiscard();
 			confirmed.run();
 		}
 		else
@@ -272,6 +273,7 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 				@Override
 				public void onClick(DialogInterface dialog, int which)
 				{
+					onDiscard();
 					confirmed.run();
 				}
 			};
@@ -282,6 +284,8 @@ public abstract class AbstractQuestAnswerFragment extends Fragment
 					.show();
 		}
 	}
+
+	protected void onDiscard() {}
 
 	protected final void applyImmediateAnswer(Bundle data)
 	{
