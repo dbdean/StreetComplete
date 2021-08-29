@@ -34,8 +34,8 @@ class AddWayLit : OsmFilterQuestType<WayLit>() {
         and
         (
           !lit
-          or lit = no and lit older today -8 years
-          or lit older today -16 years
+          or lit = no and lit older today -1 years
+          or lit older today -2 years
         )
         and (access !~ private|no or (foot and foot !~ private|no))
         and indoor != yes
