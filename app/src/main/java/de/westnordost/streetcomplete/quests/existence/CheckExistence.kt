@@ -27,6 +27,7 @@ class CheckExistence(
             or amenity = telephone
             or amenity = vending_machine and vending !~ fuel|parking_tickets|public_transport_tickets
             or amenity = public_bookcase
+            or barrier = log
           )
           and (${lastChecked(2.0)}) and (!seasonal or seasonal=no)
         ) or (
@@ -100,7 +101,7 @@ class CheckExistence(
 
     override fun isApplicableTo(element: Element) =
         (nodesFilter.matches(element) || nodesWaysFilter.matches(element))
-        && hasAnyName(element.tags)
+        //&& hasAnyName(element.tags)
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry): Sequence<Element> {
         /* put markers for objects that are exactly the same as for which this quest is asking for
