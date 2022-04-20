@@ -6,17 +6,22 @@ import android.graphics.Matrix
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.core.view.doOnPreDraw
-
+import androidx.core.view.isGone
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.databinding.ViewSideSelectPuzzleBinding
-import de.westnordost.streetcomplete.ktx.getBitmapDrawable
-import de.westnordost.streetcomplete.ktx.showTapHint
-import kotlin.math.*
+import de.westnordost.streetcomplete.util.ktx.getBitmapDrawable
+import de.westnordost.streetcomplete.util.ktx.showTapHint
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
 
 /** A very custom view that conceptually shows the left and right side of a street. Both sides
  *  are clickable.<br>
@@ -35,32 +40,32 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
         ViewSideSelectPuzzleBinding.inflate(LayoutInflater.from(context), this)
 
     var onClickSideListener: ((isRight: Boolean) -> Unit)? = null
-    set(value) {
-        field = value
-        if (value == null) {
-            binding.leftSideContainer.setOnClickListener(null)
-            binding.rightSideContainer.setOnClickListener(null)
-            binding.leftSideContainer.isClickable = false
-            binding.rightSideContainer.isClickable = false
-        } else {
-            binding.rotateContainer.isClickable = false
-            binding.leftSideContainer.setOnClickListener { value.invoke(false) }
-            binding.rightSideContainer.setOnClickListener { value.invoke(true) }
+        set(value) {
+            field = value
+            if (value == null) {
+                binding.leftSideContainer.setOnClickListener(null)
+                binding.rightSideContainer.setOnClickListener(null)
+                binding.leftSideContainer.isClickable = false
+                binding.rightSideContainer.isClickable = false
+            } else {
+                binding.rotateContainer.isClickable = false
+                binding.leftSideContainer.setOnClickListener { value.invoke(false) }
+                binding.rightSideContainer.setOnClickListener { value.invoke(true) }
+            }
         }
-    }
 
     var onClickListener: (() -> Unit)? = null
-    set(value) {
-        field = value
-        if (value == null) {
-            binding.rotateContainer.setOnClickListener(null)
-            binding.rotateContainer.isClickable = false
-        } else {
-            binding.leftSideContainer.isClickable = false
-            binding.rightSideContainer.isClickable = false
-            binding.rotateContainer.setOnClickListener { value.invoke() }
+        set(value) {
+            field = value
+            if (value == null) {
+                binding.rotateContainer.setOnClickListener(null)
+                binding.rotateContainer.isClickable = false
+            } else {
+                binding.leftSideContainer.isClickable = false
+                binding.rightSideContainer.isClickable = false
+                binding.rotateContainer.setOnClickListener { value.invoke() }
+            }
         }
-    }
 
     private var leftImage: Image? = null
     private var rightImage: Image? = null
@@ -79,7 +84,7 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
             val width = min(bottom - top, right - left)
             val height = max(bottom - top, right - left)
             val params = binding.rotateContainer.layoutParams
-            if(width != params.width || height != params.height) {
+            if (width != params.width || height != params.height) {
                 params.width = width
                 params.height = height
                 binding.rotateContainer.layoutParams = params
@@ -110,10 +115,32 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
         get() = binding.rotateContainer.rotation
         set(value) {
             binding.rotateContainer.rotation = value
-            val scale = abs(cos(rotation * PI / 180)).toFloat()
+            val scale = abs(cos(value * PI / 180)).toFloat()
             binding.rotateContainer.scaleX = 1 + scale * 2 / 3f
             binding.rotateContainer.scaleY = 1 + scale * 2 / 3f
+            binding.leftSideFloatingIcon.rotation = -value
+            binding.rightSideFloatingIcon.rotation = -value
         }
+
+    fun setLeftSideFloatingIcon(image: Image?) {
+        binding.leftSideFloatingIcon.setImage(image)
+        binding.leftSideFloatingIcon.isGone = image == null
+    }
+
+    fun setRightSideFloatingIcon(image: Image?) {
+        binding.rightSideFloatingIcon.setImage(image)
+        binding.rightSideFloatingIcon.isGone = image == null
+    }
+
+    fun replaceLeftSideFloatingIcon(image: Image?) {
+        setLeftSideFloatingIcon(image)
+        binding.leftSideFloatingIcon.animateFallDown()
+    }
+
+    fun replaceRightSideFloatingIcon(image: Image?) {
+        setRightSideFloatingIcon(image)
+        binding.rightSideFloatingIcon.animateFallDown()
+    }
 
     fun setLeftSideImage(image: Image?) {
         leftImage = image
@@ -126,29 +153,33 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
     }
 
     fun replaceLeftSideImage(image: Image?) {
-        leftImage = image
-        replaceAnimated(image, binding.leftSideImage, true)
+        setLeftSideImage(image)
+        binding.leftSideImage.animateFallDown()
     }
 
     fun replaceRightSideImage(image: Image?) {
-        rightImage = image
-        replaceAnimated(image, binding.rightSideImage, false)
+        setRightSideImage(image)
+        binding.rightSideImage.animateFallDown()
     }
 
-    fun setLeftSideText(text: String?) {
+    fun setLeftSideText(text: Text?) {
         binding.leftSideTextView.setText(text)
     }
 
-    fun setRightSideText(text: String?) {
+    fun setRightSideText(text: Text?) {
         binding.rightSideTextView.setText(text)
     }
 
     fun showLeftSideTapHint() {
-        binding.leftSideContainer.showTapHint(300)
+        if (binding.leftSideContainer.isClickable) {
+            binding.leftSideContainer.showTapHint(300)
+        }
     }
 
     fun showRightSideTapHint() {
-        binding.rightSideContainer.showTapHint(1200)
+        if (binding.rightSideContainer.isClickable) {
+            binding.rightSideContainer.showTapHint(1200)
+        }
     }
 
     fun showOnlyRightSide() {
@@ -176,19 +207,25 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
         binding.strut.layoutParams = params
     }
 
+    fun setOnlyLeftSideClickable() {
+        binding.leftSideContainer.isClickable = true
+        binding.rightSideContainer.isClickable = false
+    }
+
+    fun setOnlyRightSideClickable() {
+        binding.rightSideContainer.isClickable = true
+        binding.leftSideContainer.isClickable = false
+    }
+
+    fun setBothSidesClickable() {
+        binding.rightSideContainer.isClickable = true
+        binding.leftSideContainer.isClickable = true
+    }
+
     private fun replace(image: Image?, imgView: ImageView, flip180Degrees: Boolean) {
         val width = if (onlyShowingOneSide) binding.rotateContainer.width else binding.rotateContainer.width / 2
         if (width == 0) return
         setStreetDrawable(image, width, imgView, flip180Degrees)
-    }
-
-    private fun replaceAnimated(image: Image?, imgView: ImageView, flip180Degrees: Boolean) {
-        replace(image, imgView, flip180Degrees)
-
-        (imgView.parent as View).bringToFront()
-        imgView.scaleX = 3f
-        imgView.scaleY = 3f
-        imgView.animate().scaleX(1f).scaleY(1f)
     }
 
     private fun setStreetDrawable(image: Image?, width: Int, imageView: ImageView, flip180Degrees: Boolean) {
@@ -212,6 +249,13 @@ class StreetSideSelectPuzzle @JvmOverloads constructor(
         )
         return BitmapDrawable(resources, bitmap)
     }
+}
+
+private fun View.animateFallDown() {
+    (parent as View).bringToFront()
+    scaleX = 3f
+    scaleY = 3f
+    animate().scaleX(1f).scaleY(1f)
 }
 
 interface StreetRotateable {

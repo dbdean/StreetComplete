@@ -2,20 +2,23 @@ package de.westnordost.streetcomplete.quests.lanes
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.AnyThread
 import androidx.core.view.isGone
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.databinding.QuestLanesSelectTypeBinding
 import de.westnordost.streetcomplete.databinding.QuestStreetLanesPuzzleBinding
-import de.westnordost.streetcomplete.ktx.viewLifecycleScope
+import de.westnordost.streetcomplete.osm.isForwardOneway
+import de.westnordost.streetcomplete.osm.isOneway
+import de.westnordost.streetcomplete.osm.isReversedOneway
 import de.westnordost.streetcomplete.quests.AbstractQuestFormAnswerFragment
 import de.westnordost.streetcomplete.quests.AnswerItem
 import de.westnordost.streetcomplete.quests.StreetSideRotater
-import de.westnordost.streetcomplete.quests.lanes.LanesType.*
+import de.westnordost.streetcomplete.quests.lanes.LanesType.MARKED
+import de.westnordost.streetcomplete.quests.lanes.LanesType.MARKED_SIDES
+import de.westnordost.streetcomplete.quests.lanes.LanesType.UNMARKED
+import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.view.dialogs.ValuePickerDialog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -41,15 +44,15 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     private val isLeftHandTraffic get() = countryInfo.isLeftHandTraffic
 
-    private val isOneway get() = isForwardOneway || isReversedOneway
+    private val isOneway get() = isOneway(osmElement!!.tags)
 
-    private val isForwardOneway get() = osmElement!!.tags["oneway"] == "yes" || osmElement!!.tags["junction"] == "roundabout"
-    private val isReversedOneway get() = osmElement!!.tags["oneway"] == "-1"
+    private val isForwardOneway get() = isForwardOneway(osmElement!!.tags)
+    private val isReversedOneway get() = isReversedOneway(osmElement!!.tags)
 
     override val otherAnswers: List<AnswerItem> get() {
         val answers = mutableListOf<AnswerItem>()
 
-        if (!isOneway && countryInfo.isCenterLeftTurnLaneKnown) {
+        if (!isOneway && countryInfo.hasCenterLeftTurnLane) {
             answers.add(AnswerItem(R.string.quest_lanes_answer_lanes_center_left_turn_lane) {
                 selectedLanesType = MARKED_SIDES
                 hasCenterLeftTurnLane = true
@@ -61,8 +64,8 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     //region Lifecycle
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = super.onCreateView(inflater, container, savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         if (savedInstanceState != null) {
             selectedLanesType = savedInstanceState.getString(LANES_TYPE)?.let { LanesType.valueOf(it) }
@@ -76,8 +79,6 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
         } else {
             setStreetSideLayout()
         }
-
-        return view
     }
 
     @AnyThread override fun onMapOrientation(rotation: Float, tilt: Float) {
@@ -97,7 +98,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     override fun onClickOk() {
         val totalLanes = leftSide + rightSide
-        when(selectedLanesType) {
+        when (selectedLanesType) {
             MARKED -> applyAnswer(MarkedLanes(totalLanes))
             UNMARKED -> applyAnswer(UnmarkedLanes)
             MARKED_SIDES -> {
@@ -105,6 +106,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
                 val backwardLanes = if (isLeftHandTraffic) rightSide else leftSide
                 applyAnswer(MarkedLanesSides(forwardLanes, backwardLanes, hasCenterLeftTurnLane))
             }
+            null -> {}
         }
     }
 
@@ -163,7 +165,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     private fun setStreetSideLayout() {
         puzzleView?.let {
-            it.pause()
+            it.onPause(this)
             lifecycle.removeObserver(it)
         }
 
@@ -173,7 +175,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
         this.puzzleView = puzzleView
         lifecycle.addObserver(puzzleView)
 
-        when(selectedLanesType) {
+        when (selectedLanesType) {
             MARKED -> {
                 puzzleView.onClickListener = this::selectTotalNumberOfLanes
                 puzzleView.onClickSideListener = null
@@ -182,22 +184,23 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
                 puzzleView.onClickListener = null
                 puzzleView.onClickSideListener = this::selectNumberOfLanesOnOneSide
             }
+            else -> {}
         }
         puzzleView.isShowingLaneMarkings = selectedLanesType in listOf(MARKED, MARKED_SIDES)
         puzzleView.isShowingBothSides = !isOneway
         puzzleView.isForwardTraffic = if (isOneway) isForwardOneway else !isLeftHandTraffic
 
-        val shoulderLine = countryInfo.shoulderLine
+        val edgeLine = countryInfo.edgeLineStyle
 
-        puzzleView.shoulderLineColor =
-            if(shoulderLine.contains("yellow")) Color.YELLOW else Color.WHITE
-        puzzleView.shoulderLineStyle =
-            if(shoulderLine.contains("dashes"))
-                if (shoulderLine.contains("short")) LineStyle.SHORT_DASHES else LineStyle.DASHES
+        puzzleView.edgeLineColor =
+            if (edgeLine.contains("yellow")) Color.YELLOW else Color.WHITE
+        puzzleView.edgeLineStyle =
+            if (edgeLine.contains("dashes"))
+                if (edgeLine.contains("short")) LineStyle.SHORT_DASHES else LineStyle.DASHES
             else
                 LineStyle.CONTINUOUS
 
-        puzzleView.centerLineColor = if(countryInfo.centerLine.contains("yellow")) Color.YELLOW else Color.WHITE
+        puzzleView.centerLineColor = if (countryInfo.centerLineStyle.contains("yellow")) Color.YELLOW else Color.WHITE
 
         streetSideRotater = StreetSideRotater(
             streetLanesPuzzleBinding.puzzleViewRotateContainer,
@@ -267,7 +270,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     private suspend fun showSelectMarkedLanesDialogForBothSides(selectedValue: Int?) = suspendCancellableCoroutine<Int> { cont ->
         ValuePickerDialog(requireContext(),
-            listOf(2,4,6,8,10,12,14),
+            listOf(2, 4, 6, 8, 10, 12, 14),
             selectedValue, null,
             R.layout.quest_lanes_select_lanes,
             { cont.resume(it) }
@@ -276,7 +279,7 @@ class AddLanesForm : AbstractQuestFormAnswerFragment<LanesAnswer>() {
 
     private suspend fun showSelectMarkedLanesDialogForOneSide(selectedValue: Int?) = suspendCancellableCoroutine<Int> { cont ->
         ValuePickerDialog(requireContext(),
-            listOf(1,2,3,4,5,6,7,8),
+            listOf(1, 2, 3, 4, 5, 6, 7, 8),
             selectedValue, null,
             R.layout.quest_lanes_select_lanes_one_side_only,
             { cont.resume(it) }

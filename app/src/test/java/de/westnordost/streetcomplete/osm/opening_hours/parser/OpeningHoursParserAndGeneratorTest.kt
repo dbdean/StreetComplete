@@ -59,7 +59,7 @@ class OpeningHoursParserAndGeneratorTest {
         reject("Mo sunrise-18:00") // event based
         reject("Mo 10:00-16:00/90") // intervals
 
-        //rules overriding earlier rules
+        // rules overriding earlier rules
         reject("Th 17:30-19:30; Th 20:00-22:00")
         reject("Mo-Th 17:30-19:30; Mo-Th 10:00-12:00")
         reject("PH 08:00-20:00; PH 10:00-12:00")
@@ -112,7 +112,7 @@ class OpeningHoursParserAndGeneratorTest {
         // weekdays and PH
         accept("PH 08:00-10:00")
         accept("PH,Mo-Th 08:00-10:00")
-        accept("Mo-Th,PH 08:00-10:00","PH,Mo-Th 08:00-10:00")
+        accept("Mo-Th,PH 08:00-10:00", "PH,Mo-Th 08:00-10:00")
         // weekday ranges
         accept("Mo-Th 08:00-10:00")
         accept("Th-Tu 08:00-10:00")
@@ -142,7 +142,7 @@ class OpeningHoursParserAndGeneratorTest {
         accept("Th 17:30-19:30; Jul-Sep Mo 17:00-19:00")
         accept("Jul-Sep Mo 17:00-19:00; Th 17:30-19:30")
 
-        // alltogether now
+        // all together now
         accept("Jun,Sep-Feb PH,Mo-We,Fr,Sa 15:00-18:00,20:00-02:00+")
     }
 

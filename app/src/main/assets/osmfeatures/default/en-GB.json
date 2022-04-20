@@ -81,7 +81,13 @@
                     }
                 },
                 "access_simple": {
-                    "label": "Allowed Access"
+                    "label": "Allowed Access",
+                    "terms": "permitted,private,public"
+                },
+                "activity": {
+                    "options": {
+                        "horse": "Horse Riding"
+                    }
                 },
                 "addr/interpolation": {
                     "options": {
@@ -125,7 +131,8 @@
                         "suburb": "Suburb",
                         "suburb!jp": "Ward",
                         "unit": "Unit"
-                    }
+                    },
+                    "terms": "location"
                 },
                 "admin_level": {
                     "label": "Admin Level"
@@ -174,7 +181,8 @@
                     "label": "Products"
                 },
                 "air_conditioning": {
-                    "label": "Air Conditioning"
+                    "label": "Air Conditioning",
+                    "terms": "cooling system,refrigeration"
                 },
                 "amenity": {
                     "label": "Type"
@@ -262,14 +270,16 @@
                     "label": "Brand"
                 },
                 "brewery": {
-                    "label": "Draught Beers"
+                    "label": "Draught Beers",
+                    "terms": "on tap"
                 },
                 "bridge": {
                     "label": "Type",
                     "placeholder": "Default"
                 },
                 "building": {
-                    "label": "Building"
+                    "label": "Building",
+                    "terms": "structure"
                 },
                 "building/levels/underground": {
                     "placeholder": "2, 4, 6..."
@@ -381,7 +391,8 @@
                     "label": "Type"
                 },
                 "cuisine": {
-                    "label": "Cuisines"
+                    "label": "Cuisines",
+                    "terms": "fare,food types"
                 },
                 "currency_multi": {
                     "label": "Currency Types"
@@ -455,7 +466,8 @@
                     }
                 },
                 "description": {
-                    "label": "Description"
+                    "label": "Description",
+                    "terms": "summary"
                 },
                 "devices": {
                     "label": "Devices",
@@ -492,7 +504,8 @@
                     "label": "Type"
                 },
                 "dog": {
-                    "label": "Dogs"
+                    "label": "Dogs",
+                    "terms": "animals,pets"
                 },
                 "door": {
                     "label": "Door"
@@ -1561,7 +1574,7 @@
                     "name": "Airport Terminal"
                 },
                 "allotments/plot": {
-                    "name": "Allotments Plot"
+                    "name": "Individual Allotment Plot"
                 },
                 "amenity": {
                     "name": "Amenity"
@@ -2002,6 +2015,12 @@
                 "barrier/kerb/lowered": {
                     "name": "Lowered Kerb"
                 },
+                "barrier/kerb/raised": {
+                    "name": "Raised Kerb"
+                },
+                "barrier/kerb/rolled": {
+                    "name": "Rolled Kerb"
+                },
                 "barrier/kissing_gate": {
                     "name": "Kissing Gate"
                 },
@@ -2411,14 +2430,8 @@
                 "highway/crossing/marked": {
                     "name": "Marked Crossing"
                 },
-                "highway/crossing/marked-raised": {
-                    "name": "Marked Crossing (Raised)"
-                },
                 "highway/crossing/zebra": {
                     "name": "Marked Crossing"
-                },
-                "highway/crossing/zebra-raised": {
-                    "name": "Marked Crossing (Raised)"
                 },
                 "highway/cycleway": {
                     "name": "Cycle Path"
@@ -2432,17 +2445,11 @@
                 "highway/footway/marked": {
                     "name": "Marked Crossing"
                 },
-                "highway/footway/marked-raised": {
-                    "name": "Marked Crossing (Raised)"
-                },
                 "highway/footway/sidewalk": {
                     "name": "Pavement"
                 },
                 "highway/footway/zebra": {
                     "name": "Marked Crossing"
-                },
-                "highway/footway/zebra-raised": {
-                    "name": "Marked Crossing (Raised)"
                 },
                 "highway/give_way": {
                     "name": "Give Way Sign"
@@ -2590,6 +2597,9 @@
                 },
                 "junction": {
                     "name": "Junction"
+                },
+                "landuse/allotments": {
+                    "name": "Allotment Garden"
                 },
                 "landuse/aquaculture": {
                     "name": "Aquaculture"
@@ -2874,9 +2884,6 @@
                     "name": "Sauna"
                 },
                 "leisure/slipway": {
-                    "name": "Slipway"
-                },
-                "leisure/slipway_point": {
                     "name": "Slipway"
                 },
                 "leisure/sports_centre": {
@@ -3612,7 +3619,8 @@
                     "name": "Greengrocer"
                 },
                 "shop/hairdresser": {
-                    "name": "Hairdresser"
+                    "name": "Hairdresser",
+                    "terms": "barber"
                 },
                 "shop/hardware": {
                     "name": "Hardware Shop"
@@ -3652,7 +3660,8 @@
                     "name": "Lottery Shop"
                 },
                 "shop/mall": {
-                    "name": "Mall"
+                    "name": "Shopping Centre",
+                    "terms": "mall,shopping center"
                 },
                 "shop/massage": {
                     "name": "Massage Shop"
@@ -3927,29 +3936,8 @@
                 "type/restriction/no_right_turn": {
                     "name": "No Right Turn"
                 },
-                "type/restriction/no_straight_on": {
-                    "name": "No Straight On"
-                },
-                "type/restriction/no_u_turn": {
-                    "name": "No U-turn"
-                },
-                "type/restriction/only_left_turn": {
-                    "name": "Only Left Turn"
-                },
-                "type/restriction/only_right_turn": {
-                    "name": "Only Right Turn"
-                },
-                "type/restriction/only_straight_on": {
-                    "name": "Only Straight On"
-                },
-                "type/restriction/only_u_turn": {
-                    "name": "Only U-turn"
-                },
                 "type/route": {
                     "name": "Route"
-                },
-                "type/route/bicycle": {
-                    "name": "Cycle Route"
                 },
                 "type/route/bus": {
                     "name": "Bus Route"

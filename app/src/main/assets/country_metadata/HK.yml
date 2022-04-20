@@ -1,10 +1,11 @@
 # Do not edit. Source files are in /res/country_metadata
-centerLine: white
-chargingStationOperators: [HKEV, HK Electric, Tesla Motors Inc., Tesla Motors]
+centerLineStyle: white
+edgeLineStyle: two yellow lines
 isLeftHandTraffic: true
 mobileCountryCode: 454
+noStoppingLineStyle: double yellow
 officialLanguages: [en, zh]
-orchardProduces: [tomato]
 popularReligions: [chinese_folk, taoist, buddhist]
-shoulderLine: two yellow lines
 workweekDays: 6
+chargingStationOperators: [HKEV, HK Electric, Tesla Motors Inc., Tesla Motors]
+orchardProduces: [tomato]

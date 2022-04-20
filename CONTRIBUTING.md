@@ -26,7 +26,7 @@ Follow [**this link** to improve the translations](https://poeditor.com/join/pro
 
 After joining, the [main site of the POEditor](https://poeditor.com/projects/) should list StreetComplete for logged in users.
 
-Before each release, translations are pulled in from POEditor. Please, use POEditor for translating. Manual changes submitted as Pull Requests will not be merged as they do not help the project.
+Before each [release](res/documentation/creating%20new%20release.md), translations are pulled in from POEditor. Please, use POEditor for translating. Manual changes submitted as Pull Requests will not be merged as they do not help the project.
 
 Once 100% or close to 100% of text is translated, the given language becomes enabled. Translations which are not maintained are removed. Typically languages which are less than 60% translated will be considered as not maintained and such translation will be disabled.
 
@@ -59,12 +59,12 @@ StreetComplete depends on some projects for the app. Try to report them in the a
 * **Map style issues** should be reported in a [separate repository](https://github.com/ENT8R/streetcomplete-mapstyle).
 Examples of such issues are missing elements on the map, display errors on the map, etc. As a rule of thumb, you can report everything that happens "behind" the quest icon markers there.
 
-Note that this app has other dependencies. For reporting issues in these, you have to have some technical knowledge. So if you are **not sure** that the component listed below is responsible for the issue you have, it is often better to report them in the general StreetComplete issue tracker. People will then let you know whether this issue is solvable by StreetComplete or if it is an issue with Tangram-ES or another dependency.
+Note that this app has other dependencies. For reporting issues in these, you have to have some technical knowledge. So if you are **not sure** that the component listed below is responsible for the issue you have, it is often better to report them in the general StreetComplete issue tracker. People will then let you know whether this issue is solvable by StreetComplete or if it is an issue with Tangram-ES or another project.
 The full list of dependencies and other StreetComplete-related projects is listed [at the end of this file](#streetcomplete-related-projects).
 
 ### Suggesting new quests
 
-Not all ideas for quests are actually eligible to be included in this app. So, before you suggest a new quest, it is very important that you read the [Quest Guidelines for StreetComplete](https://github.com/streetcomplete/StreetComplete/wiki/Adding-new-Quests-to-StreetComplete).
+Not all ideas for quests are actually eligible to be included in this app. So, before you suggest a new quest, it is very important that you read the [Quest Guidelines for StreetComplete](https://github.com/streetcomplete/StreetComplete/blob/master/QUEST_GUIDELINES.md).
 
 If you can code, see also how to [develop your own quest](#developing-new-quests).
 
@@ -74,19 +74,18 @@ You can also help to keep the OpenStreetMap wiki **up-to-date** for StreetComple
 * Add missing quests in [the quest list](https://wiki.openstreetmap.org/wiki/StreetComplete/Quests) or check, that they are up to date; there is a [helper action](https://github.com/streetcomplete/StreetComplete/actions/workflows/generate-quest-list.yml) which generates a CSV for this.
 * Edit [the FAQ](https://wiki.openstreetmap.org/wiki/StreetComplete/FAQ) and add reoccurring questions.
 * Edit [the main StreetComplete page](https://wiki.openstreetmap.org/wiki/StreetComplete).
-* Edit [the JSON of all tags used by StreetComplete](https://github.com/goldfndr/StreetCompleteJSON) that is displayed on [taginfo](https://taginfo.openstreetmap.org/projects/streetcomplete); there is a [draft Pull Request](https://github.com/streetcomplete/StreetComplete/pull/2754) to automate this).
 
 ## Development
 
 If you would like to help and are able to contribute code, you are most welcome.
 
-There are many reasonable feature requests and ideas for new question types in the issue tracker which you could also engage yourself with. If you have own ideas on how to improve this app and want to make sure that the Pull Request will be merged, it is strongly suggested you **open an issue first** to discuss the feature, especially if you aim to add a new quest, [see below](#developing-new-quests).
+There are many reasonable feature requests and ideas for new question types in the issue tracker which you can use. If you have own ideas on how to improve this app and want to make sure that the pull request will be merged, it is strongly suggested you **open an issue first** to discuss the feature, especially if you aim to add a new quest, [see below](#developing-new-quests).
 
 Note that StreetComplete also uses [some dependencies](#issues-with-dependencies), where contributions are likely also accepted and help StreetComplete, too.
 
 If you need to find things where help is especially appreciated [have a look at the issues tagged with "help wanted"](https://github.com/streetcomplete/StreetComplete/labels/help%20wanted).
 
-To build and test StreetComplete [download and install Android Studio](https://developer.android.com/studio/) which comes bundled with all tools needed, checkout and open the project in this application and click on the green play button on the top.
+To build and test StreetComplete [download and install Android Studio](https://developer.android.com/studio/) which comes bundled with all tools needed, checkout and open the project in this application and click on the green play button on the top. If your first build fails due to missing dependencies, make sure [you have accepted the required license agreements](https://developer.android.com/studio/intro/update#download-with-gradle).
 
 ### Developing new quests
 
@@ -95,18 +94,35 @@ However, we strongly suggest you [**open an issue** discussing the quest](#sugge
 
 In case you **don't have an idea of a quest?** Look [at the existing issues](https://github.com/streetcomplete/StreetComplete/issues?q=is%3Aissue+is%3Aopen+label%3A%22new+quest%22+sort%3Areactions-%2B1-desc). Sorted by 👍 reactions you can also see which are the most requested quests.
 
-Always remember to pay attention to [the quest guidelines](https://github.com/streetcomplete/StreetComplete/wiki/Adding-new-Quests-to-StreetComplete) of StreetComplete! It also has tips for implementing a quest.
+Always remember to pay attention to [the quest guidelines](https://github.com/streetcomplete/StreetComplete/blob/master/QUEST_GUIDELINES.md) of StreetComplete! It also has tips for implementing a quest.
 
-### StreetComplete-related projects
+### Code style
 
-#### Dependencies
+Inheritance and class hierarchy should be avoided if possible. It is preferable to extract shared code to helper file such as [KerbUtil.kt](app/src/main/java/de/westnordost/streetcomplete/osm/kerb/KerbUtil.kt).
+
+It is recommended to install the [Ktlint (unofficial)](https://plugins.jetbrains.com/plugin/15057-ktlint-unofficial-) Android Studio plugin which highlights lint issues (e.g. inconsistent spacing) directly inline while writing code.
+
+### Hints for more active people
+
+See ["Efficiently working together"](https://github.com/streetcomplete/StreetComplete/discussions/3450) which is addressed to people highly active in this project.
+
+If you are making your first issue or pull request then you can definitely skip reading it.
+
+Materials in [`res/documentation`](res/documentation) also may be useful, it includes
+
+* [Checklist for creating a release](res/documentation/creating%20new%20release.md)
+* [Presentation discussing data model allowing offline editing, undo, splitting ways and resolving edit conflicts](res/documentation/how-it-handles%20edits.odp)
+
+## StreetComplete-related projects
+
+### Dependencies
 
 * [Tangram-ES](https://github.com/tangrams/tangram-es/) map rendering
 * [countryboundaries](https://github.com/westnordost/countryboundaries) for detecting in which country a quest is (affects quest display, etc.)
 * [osmapi](https://github.com/westnordost/osmapi) for communication with the OSM API
 * [osmfeatures](https://github.com/westnordost/osmfeatures) to correctly refer to a feature by name
 
-#### Created for StreetComplete
+### Created for StreetComplete
 
 * [StreetCompleteJSON](https://github.com/goldfndr/StreetCompleteJSON) by [@goldfndr](https://github.com/goldfndr) listing all tags edited by StreetComplete for [taginfo](https://taginfo.openstreetmap.org/projects/streetcomplete)
 * [blacklistr](https://github.com/ENT8R/blacklistr) by [@ENT8R](https://github.com/ENT8R) for visualizing StreetComplete's country exclusion list
@@ -117,7 +133,7 @@ Always remember to pay attention to [the quest guidelines](https://github.com/st
 * [streetcomplete-ad-c3](https://github.com/rugk/streetcomplete-ad-c3) by [@rugk](https://github.com/rugk) as a banner advertisement
 * [sc-photo-service](https://github.com/streetcomplete/sc-photo-service) by [@exploide](https://github.com/exploide) allows StreetComplete to upload photos associated with OSM Notes
 * [sc-statistics-service](https://github.com/streetcomplete/sc-statistics-service) by [@westnordost](https://github.com/westnordost) aggregates and provides StreetComplete-related statistics about users.
-* [StreetComplete-taginfo-categorize](https://github.com/mnalis/StreetComplete-taginfo-categorize) by [@mnalis](https://github.com/mnalis) generates tags listed in [KEYS_THAT_SHOULD_BE_REMOVED_WHEN_SHOP_IS_REPLACED](https://github.com/streetcomplete/StreetComplete/blob/master/app/src/main/java/de/westnordost/streetcomplete/data/meta/OsmTaggings.kt#L35)
+* [StreetComplete-taginfo-categorize](https://github.com/mnalis/StreetComplete-taginfo-categorize) by [@mnalis](https://github.com/mnalis) generates tags listed in [KEYS_THAT_SHOULD_BE_REMOVED_WHEN_SHOP_IS_REPLACED](https://github.com/streetcomplete/StreetComplete/blob/master/app/src/main/java/de/westnordost/streetcomplete/osm/Shop.kt#L6)
 
 You may find more projects under [the StreetComplete tag](https://github.com/topics/streetcomplete) on GitHub.
 

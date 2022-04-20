@@ -8,6 +8,8 @@ object ApplicationConstants {
     const val MAX_DOWNLOADABLE_AREA_IN_SQKM = 12.0
     const val MIN_DOWNLOADABLE_AREA_IN_SQKM = 0.1
 
+    const val COPYRIGHT_YEARS = "2016-2022"
+
     const val DATABASE_NAME = "streetcomplete_v2.db"
     const val OLD_DATABASE_NAME = "streetcomplete.db"
 
@@ -35,7 +37,7 @@ object ApplicationConstants {
     /** The creation of some quests is dependent on surrounding geometry. This constant describes
      *  the maximum distance surrounding elements may affect whether a quest is created or not */
     //  e.g. AddRecyclingContainerMaterials, AddCycleway
-    const val QUEST_FILTER_PADDING = 20.0 //m
+    const val QUEST_FILTER_PADDING = 20.0 // m
 
     const val AVATARS_CACHE_DIRECTORY = "osm_user_avatars"
 

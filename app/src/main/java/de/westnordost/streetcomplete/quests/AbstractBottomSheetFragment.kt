@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests
 
-
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
@@ -8,16 +7,18 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.*
+import androidx.core.view.isGone
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.ktx.toPx
-import de.westnordost.streetcomplete.ktx.updateMargins
-import de.westnordost.streetcomplete.ktx.viewLifecycleScope
+import de.westnordost.streetcomplete.util.ktx.dpToPx
+import de.westnordost.streetcomplete.util.ktx.updateMargins
+import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
 import de.westnordost.streetcomplete.view.SlidingRelativeLayout
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
@@ -44,6 +45,13 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
     protected abstract val backButton: View?
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
+    private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {}
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            updateCloseButtonVisibility()
+        }
+    }
 
     private var minBottomInset = Int.MAX_VALUE
 
@@ -67,7 +75,7 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
         view.respectSystemInsets {
             scrollViewChild.updatePadding(bottom = it.bottom)
             bottomSheetContainer.updateMargins(top = it.top, left = it.left, right = it.right)
-            floatingBottomView?.updateMargins(bottom = it.bottom + 8f.toPx(context).toInt())
+            floatingBottomView?.updateMargins(bottom = it.bottom + context.dpToPx(8).toInt())
 
             // expanding bottom sheet when keyboard is opened
             if (minBottomInset < it.bottom) expand()
@@ -96,14 +104,7 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
             }
         }
 
-        bottomSheetBehavior.addBottomSheetCallback(object :
-            BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {}
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                updateCloseButtonVisibility()
-            }
-        })
+        bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback)
 
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE || defaultExpanded) {
             expand()
@@ -130,12 +131,17 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
         bottomSheetContainer.updateLayoutParams { width = resources.getDimensionPixelSize(R.dimen.quest_form_width) }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomSheetBehavior.removeBottomSheetCallback(bottomSheetCallback)
+    }
+
     fun expand() {
         bottomSheetBehavior.state = STATE_EXPANDED
     }
 
     private fun updateCloseButtonVisibility() {
-        backButton?.isInvisible = (bottomSheet.top) > 0
+        backButton?.isGone = (bottomSheet.top) > 0
     }
 
     @UiThread override fun onClickMapAt(position: LatLon, clickAreaSizeInMeters: Double): Boolean {

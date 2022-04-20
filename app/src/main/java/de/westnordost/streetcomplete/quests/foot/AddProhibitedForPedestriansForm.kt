@@ -2,9 +2,14 @@ package de.westnordost.streetcomplete.quests.foot
 
 import androidx.appcompat.app.AlertDialog
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.databinding.DialogLivingStreetConfirmationBinding
 import de.westnordost.streetcomplete.quests.AbstractQuestAnswerFragment
 import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.quests.foot.ProhibitedForPedestriansAnswer.*
+import de.westnordost.streetcomplete.quests.foot.ProhibitedForPedestriansAnswer.HAS_SEPARATE_SIDEWALK
+import de.westnordost.streetcomplete.quests.foot.ProhibitedForPedestriansAnswer.IS_LIVING_STREET
+import de.westnordost.streetcomplete.quests.foot.ProhibitedForPedestriansAnswer.NO
+import de.westnordost.streetcomplete.quests.foot.ProhibitedForPedestriansAnswer.YES
+import de.westnordost.streetcomplete.util.ktx.livingStreetSignDrawableResId
 
 class AddProhibitedForPedestriansForm : AbstractQuestAnswerFragment<ProhibitedForPedestriansAnswer>() {
 
@@ -21,7 +26,7 @@ class AddProhibitedForPedestriansForm : AbstractQuestAnswerFragment<ProhibitedFo
         val result = mutableListOf<AnswerItem>()
 
         val highwayTag = osmElement!!.tags["highway"]!!
-        if (countryInfo.isLivingStreetKnown && MAYBE_LIVING_STREET.contains(highwayTag)) {
+        if (countryInfo.hasLivingStreet && MAYBE_LIVING_STREET.contains(highwayTag)) {
             result.add(AnswerItem(R.string.quest_maxspeed_answer_living_street) { confirmLivingStreet() })
         }
         return result
@@ -29,8 +34,10 @@ class AddProhibitedForPedestriansForm : AbstractQuestAnswerFragment<ProhibitedFo
 
     private fun confirmLivingStreet() {
         val ctx = context ?: return
+        val dialogBinding = DialogLivingStreetConfirmationBinding.inflate(layoutInflater)
+        countryInfo.livingStreetSignDrawableResId?.let { dialogBinding.livingStreetImage.setImageResource(it) }
         AlertDialog.Builder(ctx)
-            .setView(R.layout.quest_maxspeed_living_street_confirmation)
+            .setView(dialogBinding.root)
             .setTitle(R.string.quest_maxspeed_answer_living_street_confirmation_title)
             .setPositiveButton(R.string.quest_generic_confirmation_yes) { _, _ -> applyAnswer(IS_LIVING_STREET) }
             .setNegativeButton(R.string.quest_generic_confirmation_no, null)
