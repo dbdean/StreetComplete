@@ -66,7 +66,7 @@ class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, An
                 ways, relations with building
             """)
             .map {
-                it to OverlayStyle.Polygon(OverlayColor.Invisible, label = getShortHouseNumber(it.tags))
+                it to OverlayStyle.Polygon(OverlayColor.Invisible)
             }
 
     override fun createForm(element: Element?) =
