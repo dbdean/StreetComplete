@@ -18,6 +18,7 @@ import de.westnordost.streetcomplete.quests.shop_type.CheckShopType
 import de.westnordost.streetcomplete.quests.shop_type.SpecifyShopType
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.getNameLabel
+import de.westnordost.streetcomplete.util.getShortHouseNumber
 import de.westnordost.streetcomplete.view.presetIconIndex
 
 class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, AndroidOverlay {
@@ -59,7 +60,14 @@ class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, An
                   entrance
                   and !(addr:housenumber or addr:housename or addr:conscriptionnumber or addr:streetnumber)
             """)
-            .map { it to OverlayStyle.Point(icon = null, label = "◽") }
+            .map { it to OverlayStyle.Point(icon = null, label = "◽") } +
+        mapData
+            .filter("""
+                ways, relations with building
+            """)
+            .map {
+                it to OverlayStyle.Polygon(OverlayColor.Invisible, label = getShortHouseNumber(it.tags))
+            }
 
     override fun createForm(element: Element?) =
         // this check is necessary because the form shall not be shown for entrances
