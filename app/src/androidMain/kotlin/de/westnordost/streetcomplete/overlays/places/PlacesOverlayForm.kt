@@ -113,7 +113,7 @@ class PlacesOverlayForm : AbstractOverlayForm() {
         vacantShopFeature = featureDictionary.getById("shop/vacant", languages)!!
         originalNames = parseLocalizedNames(element?.tags.orEmpty()).orEmpty()
         originalFeature = getOriginalFeature()
-        selectedFeature.value = originalFeature
+        selectedFeature.value = originalFeature?.takeIf { it.toElement().isPlace() || it.id == "shop/vacant" }
         originalNoName = element?.tags?.get("name:signed") == "no" || element?.tags?.get("noname") == "yes"
     }
 
