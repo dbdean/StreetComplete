@@ -13,10 +13,10 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 fun Feature.applyTo(tags: Tags, previousFeature: Feature? = null) {
     if (previousFeature != null) {
         for ((key, value) in previousFeature.removeTags) {
-            if (tags[key] == value) tags.remove(key)
+            if (key != "building" && tags[key] == value) tags.remove(key)
         }
         for (key in previousFeature.removeTagKeys) {
-            tags.remove(key)
+            if (key != "building") tags.remove(key)
         }
     }
     for ((key, value) in addTagKeys.associateWith { "yes" } + addTags) {
