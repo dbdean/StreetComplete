@@ -113,7 +113,7 @@ class PlacesOverlayForm : AbstractOverlayForm() {
         vacantShopFeature = featureDictionary.getById("shop/vacant", languages)!!
         originalNames = parseLocalizedNames(element?.tags.orEmpty()).orEmpty()
         originalFeature = getOriginalFeature()
-        selectedFeature.value = originalFeature?.takeIf { it.toElement().isPlace() || it.id == "shop/vacant" }
+        selectedFeature.value = originalFeature
         originalNoName = element?.tags?.get("name:signed") == "no" || element?.tags?.get("noname") == "yes"
     }
 
@@ -122,13 +122,15 @@ class PlacesOverlayForm : AbstractOverlayForm() {
 
         return getFeatureDictionaryFeature(element)
             ?: (if (element.isDisusedPlace()) vacantShopFeature else null)
-            ?: BaseFeature(
-                id = "shop/unknown",
-                names = listOf(requireContext().getString(R.string.unknown_shop_title)),
-                icon = "maki-shop",
-                tags = element.tags,
-                geometry = GeometryType.entries.toList()
-            )
+            ?: (if (element.isPlace()) {
+                BaseFeature(
+                    id = "shop/unknown",
+                    names = listOf(requireContext().getString(R.string.unknown_shop_title)),
+                    icon = "maki-shop",
+                    tags = element.tags,
+                    geometry = GeometryType.entries.toList()
+                )
+            } else null)
     }
 
     private fun getFeatureDictionaryFeature(element: Element): Feature? {
