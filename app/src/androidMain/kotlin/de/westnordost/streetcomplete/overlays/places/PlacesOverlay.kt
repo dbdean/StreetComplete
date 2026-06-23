@@ -18,7 +18,6 @@ import de.westnordost.streetcomplete.quests.shop_type.CheckShopType
 import de.westnordost.streetcomplete.quests.shop_type.SpecifyShopType
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.getNameLabel
-import de.westnordost.streetcomplete.util.getShortHouseNumber
 import de.westnordost.streetcomplete.view.presetIconIndex
 
 class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, AndroidOverlay {
