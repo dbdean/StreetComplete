@@ -64,6 +64,7 @@ class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, An
             .filter("""
                 ways, relations with building
             """)
+            .filter { !it.isPlaceOrDisusedPlace() }
             .map {
                 it to OverlayStyle.Polygon(OverlayColor.Invisible)
             }

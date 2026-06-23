@@ -378,12 +378,14 @@ private suspend fun createEditAction(
         // place has been added, nothing to replace
         || element == null
     val shouldAlwaysReplaceShop =
+        // the place is new, nothing to replace/confirm
+        previousFeature == null
         // the feature is or was a brand feature and the type has changed -> definitely different
         // place now; If the name and/or feature changed, the user might just have corrected the
         // spelling or corrected the type (e.g. kindergarten -> childcare), so it is better to ask.
         // Also, a place might have been tagged as fast food before and now it is pizza fast food,
         // this should not lead to auto-replacing (see #6406)
-        (isBrand || wasBrand) && !isFeatureSubtype
+        || (isBrand || wasBrand) && !isFeatureSubtype
         // was vacant before but not anymore (-> cleans up any previous tags that may be
         // associated with the old place)
         || wasVacant && hasChangedId
