@@ -222,7 +222,7 @@ class PlacesOverlayForm : AbstractOverlayForm() {
                 }
                 // show only for adding new POIs becaues it gets too busy with also the name form
                 // being displayed
-                if (lastPickedFeatures.isNotEmpty() && element == null && selectedFeature.value == null) {
+                if (lastPickedFeatures.isNotEmpty() && originalFeature == null && selectedFeature.value == null) {
                     LastPickedChipsRow(
                         items = lastPickedFeatures,
                         onClick = {

@@ -71,5 +71,5 @@ class PlacesOverlay(private val getFeature: (Element) -> Feature?) : Overlay, An
 
     override fun createForm(element: Element?) =
         // this check is necessary because the form shall not be shown for entrances
-        if (element == null || element.isPlaceOrDisusedPlace()) PlacesOverlayForm() else null
+        if (element == null || element.isPlaceOrDisusedPlace() || element.tags.containsKey("building")) PlacesOverlayForm() else null
 }
