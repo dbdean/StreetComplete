@@ -112,7 +112,7 @@ fun PointerPinButton(
                 Text(
                     text = distance,
                     style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
-                    color = MaterialTheme.colors.primary,
+                    color = MaterialTheme.colors.onSurface,
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier
