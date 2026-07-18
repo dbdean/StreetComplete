@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -66,20 +67,11 @@ fun PointerPinButton(
     content: @Composable (BoxScope.() -> Unit),
 ) {
     val pointerPinShape = remember { PointerPinShape() }
-    val a = (rotate * PI / 180f).toFloat()
-    
-    val width = 50.dp
-    val height = 90.dp
-    val hDiv2w = height.value / (2f * width.value) // 90 / 100 = 0.9f
 
     Surface(
         onClick = onClick,
         modifier = modifier
-            .size(width, height)
-            .proportionalAbsoluteOffset(
-                x = -0.5f - hDiv2w * sin(a),
-                y = -0.5f + 0.5f * cos(a),
-            )
+            .pointerPinOffset(rotate)
             .graphicsLayer {
                 rotationZ = rotate
             },
@@ -90,16 +82,14 @@ fun PointerPinButton(
         border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier
+                .proportionalPadding(top = 0.15f, bottom = 0.1f, start = 0.1f, end = 0.1f)
+                .padding(contentPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
-            ) {
-                content()
-            }
+            Box { content() }
             if (distance != null) {
                 // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
                 var normalizedRotate = rotate % 360f
@@ -115,15 +105,60 @@ fun PointerPinButton(
                     color = MaterialTheme.colors.onSurface,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 20.dp)
-                        .graphicsLayer {
-                            rotationZ = textRotation
-                        }
+                    modifier = Modifier.rotateLayout(textRotation)
                 )
             }
         }
+    }
+}
+
+// A custom modifier that rotates the layout bounds along with the content
+private fun Modifier.rotateLayout(rotation: Float) = layout { measurable, constraints ->
+    val is90or270 = (rotation % 180f) != 0f
+    val rotatedConstraints = if (is90or270) {
+        constraints.copy(
+            minWidth = constraints.minHeight,
+            maxWidth = constraints.maxHeight,
+            minHeight = constraints.minWidth,
+            maxHeight = constraints.maxWidth
+        )
+    } else {
+        constraints
+    }
+    val placeable = measurable.measure(rotatedConstraints)
+    val width = if (is90or270) placeable.height else placeable.width
+    val height = if (is90or270) placeable.width else placeable.height
+    layout(width, height) {
+        if (is90or270) {
+            placeable.placeWithLayer(
+                x = (width - placeable.width) / 2,
+                y = (height - placeable.height) / 2
+            ) {
+                rotationZ = rotation
+            }
+        } else {
+            placeable.place(0, 0)
+        }
+    }
+}
+
+// A custom modifier that calculates the correct mathematical offset dynamically
+private fun Modifier.pointerPinOffset(rotate: Float) = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    val w = placeable.width.toFloat()
+    val h = placeable.height.toFloat()
+
+    val a = (rotate * PI / 180f).toFloat()
+    val hDiv2w = h / (2f * w)
+
+    val xFactor = -0.5f - hDiv2w * sin(a)
+    val yFactor = -0.5f + 0.5f * cos(a)
+
+    layout(placeable.width, placeable.height) {
+        placeable.place(
+            x = (xFactor * w).toInt(),
+            y = (yFactor * h).toInt()
+        )
     }
 }
 
