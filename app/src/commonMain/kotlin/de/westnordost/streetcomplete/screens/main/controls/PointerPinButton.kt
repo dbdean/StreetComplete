@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ButtonColors
@@ -89,14 +90,16 @@ fun PointerPinButton(
         border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
-        Column(
-            modifier = Modifier
-                .proportionalPadding(top = 0.15f, bottom = 0.1f, start = 0.1f, end = 0.1f)
-                .padding(contentPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box { content() }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+            ) {
+                content()
+            }
             if (distance != null) {
                 // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
                 var normalizedRotate = rotate % 360f
@@ -112,9 +115,12 @@ fun PointerPinButton(
                     color = MaterialTheme.colors.primary,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = textRotation
-                    }
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 20.dp)
+                        .graphicsLayer {
+                            rotationZ = textRotation
+                        }
                 )
             }
         }
