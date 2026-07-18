@@ -66,9 +66,14 @@ fun PointerPinButton(
 ) {
     val pointerPinShape = remember { PointerPinShape() }
     val a = (rotate * PI / 180f).toFloat()
+    
+    val width = 50.dp
+    val height = 90.dp
+
     Surface(
         onClick = onClick,
         modifier = modifier
+            .size(width, height)
             .proportionalAbsoluteOffset(
                 x = (-sin(a.toDouble()) / 2.0 - 0.5).toFloat(),
                 y = (cos(a.toDouble()) / 2.0 - 0.5).toFloat(),
@@ -92,17 +97,20 @@ fun PointerPinButton(
         ) {
             Box { content() }
             if (distance != null) {
-                // Normalize rotate to [-180, 180] to easily detect upside-down range
+                // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
                 var normalizedRotate = rotate % 360f
                 if (normalizedRotate > 180f) normalizedRotate -= 360f
                 if (normalizedRotate < -180f) normalizedRotate += 360f
-                val isUpsideDown = normalizedRotate > 90f || normalizedRotate < -90f
-                val textRotation = if (isUpsideDown) 180f else 0f
+
+                // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
+                val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
                 Text(
                     text = distance,
                     style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
                     color = MaterialTheme.colors.primary,
+                    maxLines = 1,
+                    softWrap = false,
                     modifier = Modifier.graphicsLayer {
                         rotationZ = textRotation
                     }

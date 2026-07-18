@@ -69,6 +69,7 @@ import de.westnordost.streetcomplete.screens.main.controls.QuickSettingsDropdown
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBar
 import de.westnordost.streetcomplete.screens.main.controls.StarsCounter
 import de.westnordost.streetcomplete.screens.main.controls.ZoomButtons
+import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasures
 import de.westnordost.streetcomplete.screens.main.controls.defaultScaleBarMeasures
 import de.westnordost.streetcomplete.screens.main.controls.findEllipsisIntersection
@@ -93,6 +94,8 @@ import de.westnordost.streetcomplete.ui.common.StopRecordingIcon
 import de.westnordost.streetcomplete.ui.common.UndoIcon
 import de.westnordost.streetcomplete.ui.ktx.dir
 import de.westnordost.streetcomplete.ui.ktx.pxToDp
+import de.westnordost.streetcomplete.util.DistanceFormatter
+import de.westnordost.streetcomplete.util.ktx.sendErrorReportEmail
 import de.westnordost.streetcomplete.util.ktx.toast
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -257,7 +260,12 @@ fun MainScreen(
             val totalDistPx = displayedPosition?.let { (it - screen!!.center).getDistance() } ?: 0f
             val edgeDistPx = (offset - screen!!.center).getDistance()
             val distanceMeters = (totalDistPx - edgeDistPx).pxToDp().value.toDouble() * metersPerDp
-            val distanceText = if (distanceMeters > 0.0) scaleBarMeasures.primary.getText(distanceMeters) else null
+            val unitSystem = when (scaleBarMeasures.primary) {
+                ScaleBarMeasure.FeetAndMiles -> DistanceFormatter.UnitSystem.IMPERIAL_FEET
+                ScaleBarMeasure.YardsAndMiles -> DistanceFormatter.UnitSystem.IMPERIAL_YARDS
+                else -> DistanceFormatter.UnitSystem.METRIC
+            }
+            val distanceText = if (distanceMeters > 0.0) DistanceFormatter.format(distanceMeters, unitSystem) else null
 
             PointerPinButton(
                 onClick = onClickLocationPointer,

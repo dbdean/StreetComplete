@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.FeetAndMiles
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.Metric
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.YardsAndMiles
+import de.westnordost.streetcomplete.util.DistanceFormatter
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.pow
 
@@ -27,11 +28,7 @@ interface ScaleBarMeasure {
 
         @Composable
         override fun getText(stop: Double): String =
-            if (stop >= 1000) {
-                (stop / 1000).formatForDisplay(stringResource(Res.string.kilometers_symbol))
-            } else {
-                stop.formatForDisplay(stringResource(Res.string.meters_symbol))
-            }
+            DistanceFormatter.format(stop * unitInMeters, DistanceFormatter.UnitSystem.METRIC)
     }
 
     /** A measure of international feet and miles */
@@ -50,11 +47,7 @@ interface ScaleBarMeasure {
 
         @Composable
         override fun getText(stop: Double): String =
-            if (stop >= FEET_IN_MILE) {
-                (stop / FEET_IN_MILE).formatForDisplay(stringResource(Res.string.miles_symbol))
-            } else {
-                stop.formatForDisplay(stringResource(Res.string.feet_symbol))
-            }
+            DistanceFormatter.format(stop * unitInMeters, DistanceFormatter.UnitSystem.IMPERIAL_FEET)
     }
 
     /** A measure of international yard and miles */
@@ -73,17 +66,9 @@ interface ScaleBarMeasure {
 
         @Composable
         override fun getText(stop: Double): String =
-            if (stop >= YARDS_IN_MILE) {
-                (stop / YARDS_IN_MILE).formatForDisplay(stringResource(Res.string.miles_symbol))
-            } else {
-                stop.formatForDisplay(stringResource(Res.string.yards_symbol))
-            }
+            DistanceFormatter.format(stop * unitInMeters, DistanceFormatter.UnitSystem.IMPERIAL_YARDS)
     }
 }
-
-/** format a number with a unit symbol, not showing the decimal point if it's an integer */
-private fun Double.formatForDisplay(symbol: String) =
-    if (this.toInt().toDouble() == this) "${this.toInt()} $symbol" else "$this $symbol"
 
 /** build a list of stops by multiplying mantissas by 10^exponents, like scientific notation */
 private fun buildStops(mantissas: List<Int>, exponents: IntRange) = buildList {
