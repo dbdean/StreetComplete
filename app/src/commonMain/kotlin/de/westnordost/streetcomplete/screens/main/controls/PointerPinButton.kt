@@ -69,14 +69,15 @@ fun PointerPinButton(
     
     val width = 50.dp
     val height = 90.dp
+    val hDiv2w = height.value / (2f * width.value) // 90 / 100 = 0.9f
 
     Surface(
         onClick = onClick,
         modifier = modifier
             .size(width, height)
             .proportionalAbsoluteOffset(
-                x = (-sin(a.toDouble()) / 2.0 - 0.5).toFloat(),
-                y = (cos(a.toDouble()) / 2.0 - 0.5).toFloat(),
+                x = -0.5f - hDiv2w * sin(a),
+                y = -0.5f + 0.5f * cos(a),
             )
             .graphicsLayer {
                 rotationZ = rotate
