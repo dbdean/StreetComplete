@@ -45,6 +45,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
@@ -68,6 +69,8 @@ import de.westnordost.streetcomplete.screens.main.controls.QuickSettingsDropdown
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBar
 import de.westnordost.streetcomplete.screens.main.controls.StarsCounter
 import de.westnordost.streetcomplete.screens.main.controls.ZoomButtons
+import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasures
+import de.westnordost.streetcomplete.screens.main.controls.defaultScaleBarMeasures
 import de.westnordost.streetcomplete.screens.main.controls.findEllipsisIntersection
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistorySidebar
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistoryViewModel
@@ -244,15 +247,22 @@ fun MainScreen(
         }
 
         var screen by remember { mutableStateOf<Rect?>(null) }
+        val scaleBarMeasures = defaultScaleBarMeasures()
         val intersection = remember(displayedPosition, screen) {
             findEllipsisIntersection(screen, displayedPosition)
         }
 
         intersection?.let { (offset, angle) ->
             val rotation = angle * 180 / PI
+            val totalDistPx = displayedPosition?.let { (it - screen!!.center).getDistance() } ?: 0f
+            val edgeDistPx = (offset - screen!!.center).getDistance()
+            val distanceMeters = (totalDistPx - edgeDistPx).pxToDp().value.toDouble() * metersPerDp
+            val distanceText = if (distanceMeters > 0.0) scaleBarMeasures.primary.getText(distanceMeters) else null
+
             PointerPinButton(
                 onClick = onClickLocationPointer,
                 rotate = rotation.toFloat(),
+                distance = distanceText,
                 modifier = Modifier.absoluteOffset(offset.x.pxToDp(), offset.y.pxToDp()),
             ) { Image(painterResource(Res.drawable.location_dot_small), null) }
         }

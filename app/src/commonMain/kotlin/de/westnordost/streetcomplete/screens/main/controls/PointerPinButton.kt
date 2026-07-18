@@ -7,29 +7,36 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.PathParser
-import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.ktx.proportionalAbsoluteOffset
 import de.westnordost.streetcomplete.ui.ktx.proportionalPadding
@@ -52,20 +59,23 @@ fun PointerPinButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(
         backgroundColor = MaterialTheme.colors.surface,
     ),
-    contentPadding: Dp = 12.dp,
+    contentPadding: Dp = 8.dp,
     rotate: Float = 0f,
+    distance: String? = null,
     content: @Composable (BoxScope.() -> Unit),
 ) {
-    val pointerPinShape = remember(rotate) { PointerPinShape(rotate) }
-    val a = rotate * PI / 180f
-    val pointySize = 14f / 76f
+    val pointerPinShape = remember { PointerPinShape() }
+    val a = (rotate * PI / 180f).toFloat()
     Surface(
         onClick = onClick,
         modifier = modifier
             .proportionalAbsoluteOffset(
-                x = (-sin(a) / 2.0 - 0.5).toFloat(),
-                y = (cos(a) / 2.0 - 0.5).toFloat(),
-            ),
+                x = (-sin(a.toDouble()) / 2.0 - 0.5).toFloat(),
+                y = (cos(a.toDouble()) / 2.0 - 0.5).toFloat(),
+            )
+            .graphicsLayer {
+                rotationZ = rotate
+            },
         enabled = enabled,
         shape = pointerPinShape,
         color = colors.backgroundColor(enabled).value,
@@ -73,38 +83,56 @@ fun PointerPinButton(
         border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
-        Box(Modifier
-            .proportionalPadding(pointySize)
-            .padding(contentPadding)
-        ) { content() }
+        Column(
+            modifier = Modifier
+                .proportionalPadding(top = 0.15f, bottom = 0.1f, start = 0.1f, end = 0.1f)
+                .padding(contentPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box { content() }
+            if (distance != null) {
+                // Normalize rotate to [-180, 180] to easily detect upside-down range
+                var normalizedRotate = rotate % 360f
+                if (normalizedRotate > 180f) normalizedRotate -= 360f
+                if (normalizedRotate < -180f) normalizedRotate += 360f
+                val isUpsideDown = normalizedRotate > 90f || normalizedRotate < -90f
+                val textRotation = if (isUpsideDown) 180f else 0f
+
+                Text(
+                    text = distance,
+                    style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = textRotation
+                    }
+                )
+            }
+        }
     }
 }
 
-private class PointerPinShape(val rotation: Float = 0f) : Shape {
-
-    private val pathSize = 76f
-    private val path = PathParser()
-        .parsePathString("M 38,62 C 24.745,62 14,51.255 14,38 14.003,32.6405 15.7995,27.4365 19.1035,23.217 L 38,0 56.914,23.2715 C 60.2005,27.4785 61.99,32.6615 62,38 62,51.255 51.255,62 38,62 Z")
-        .toNodes()
+private class PointerPinShape : Shape {
 
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
         density: Density
     ): Outline {
-        val m = Matrix()
-        val halfWidth = size.width / 2
-        val halfHeight = size.height / 2
-        m.translate(halfWidth, halfHeight)
-        m.rotateZ(rotation)
-        m.translate(-halfWidth, -halfHeight)
-        m.scale(
-            x = size.width / pathSize,
-            y = size.height / pathSize
-        )
-        val p = path.toPath()
-        p.transform(m)
-        return Outline.Generic(p)
+        val path = Path()
+        val w = size.width
+        val h = size.height
+        val r = w / 2f
+
+        // Elongated capsule with pointy end on the top. Tip at (w/2, 0)
+        path.moveTo(w / 2f, 0f)
+        path.lineTo(0f, r) // Left shoulder
+        path.lineTo(0f, h - r) // Left edge
+        path.arcTo(Rect(0f, h - 2 * r, w, h), 180f, -180f, false) // Bottom curve
+        path.lineTo(w, r) // Right shoulder
+        path.close()
+
+        return Outline.Generic(path)
     }
 }
 
@@ -116,7 +144,11 @@ private fun PreviewPointerPinButton() {
         0f, 360f,
         infiniteRepeatable(tween(12000, 0, LinearEasing)),
     )
-    PointerPinButton(onClick = {}, rotate = rotation) {
-        Image(painterResource(Res.drawable.location_dot_small), null)
+    PointerPinButton(onClick = {}, rotate = rotation, distance = "120 m") {
+        Image(
+            painter = painterResource(Res.drawable.location_dot_small),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
