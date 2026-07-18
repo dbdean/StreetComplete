@@ -174,12 +174,47 @@ private class PointerPinShape : Shape {
         val h = size.height
         val r = w / 2f
 
-        // Elongated capsule with pointy end on the top. Tip at (w/2, 0)
+        // Original pointer geometry ratios (based on radius R = 24, tip distance = 38):
+        val hTop = (38f / 24f) * r
+        val dx = -0.78735f * r
+        val dy = -0.61596f * r
+
+        // Tip is at (w/2, 0)
         path.moveTo(w / 2f, 0f)
-        path.lineTo(0f, r) // Left shoulder
-        path.lineTo(0f, h - r) // Left edge
-        path.arcTo(Rect(0f, h - 2 * r, w, h), 180f, -180f, false) // Bottom curve
-        path.lineTo(w, r) // Right shoulder
+        
+        // Line to left shoulder transition point
+        path.lineTo(w / 2f + dx, hTop + dy)
+        
+        // Arc from left shoulder to left vertical edge (0, hTop)
+        path.arcTo(
+            rect = Rect(w / 2f - r, hTop - r, w / 2f + r, hTop + r),
+            startAngleDegrees = 218f,
+            sweepAngleDegrees = -38f,
+            forceMoveTo = false
+        )
+        
+        // Line down to bottom-left curve start
+        path.lineTo(0f, h - r)
+        
+        // Bottom curve (semi-circle arc)
+        path.arcTo(
+            rect = Rect(0f, h - 2f * r, w, h),
+            startAngleDegrees = 180f,
+            sweepAngleDegrees = -180f,
+            forceMoveTo = false
+        )
+        
+        // Line up to right vertical edge end
+        path.lineTo(w, hTop)
+        
+        // Arc from right vertical edge to right shoulder transition point
+        path.arcTo(
+            rect = Rect(w / 2f - r, hTop - r, w / 2f + r, hTop + r),
+            startAngleDegrees = 0f,
+            sweepAngleDegrees = -38f,
+            forceMoveTo = false
+        )
+        
         path.close()
 
         return Outline.Generic(path)
