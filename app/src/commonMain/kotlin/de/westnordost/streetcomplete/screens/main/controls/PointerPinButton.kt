@@ -82,31 +82,61 @@ fun PointerPinButton(
         border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
-        Column(
-            modifier = Modifier
-                .proportionalPadding(top = 0.15f, bottom = 0.1f, start = 0.1f, end = 0.1f)
-                .padding(contentPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Box { content() }
-            if (distance != null) {
-                // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
-                var normalizedRotate = rotate % 360f
-                if (normalizedRotate > 180f) normalizedRotate -= 360f
-                if (normalizedRotate < -180f) normalizedRotate += 360f
+        androidx.compose.ui.layout.Layout(
+            content = {
+                Box(modifier = Modifier.size(24.dp)) { content() }
+                if (distance != null) {
+                    // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
+                    var normalizedRotate = rotate % 360f
+                    if (normalizedRotate > 180f) normalizedRotate -= 360f
+                    if (normalizedRotate < -180f) normalizedRotate += 360f
 
-                // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
-                val textRotation = if (normalizedRotate > 0f) -90f else 90f
+                    // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
+                    val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
-                Text(
-                    text = distance,
-                    style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
-                    color = MaterialTheme.colors.onSurface,
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.rotateLayout(textRotation)
-                )
+                    Text(
+                        text = distance,
+                        style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
+                        color = MaterialTheme.colors.onSurface,
+                        maxLines = 1,
+                        softWrap = false,
+                        modifier = Modifier.rotateLayout(textRotation)
+                    )
+                }
+            }
+        ) { measurables, constraints ->
+            val paddingPx = contentPadding.toPx()
+            val w = (24.dp.toPx() + 2f * paddingPx) // Fixed base width matching dot + padding
+            val r = w / 2f
+            val hTop = (38f / 24f) * r
+
+            val dotPlaceable = measurables[0].measure(constraints.copy(minWidth = 0, minHeight = 0))
+            val textPlaceable = if (measurables.size > 1) {
+                measurables[1].measure(constraints.copy(minWidth = 0, minHeight = 0))
+            } else null
+
+            val spacing = 4.dp.toPx()
+            val paddingBottom = 8.dp.toPx()
+
+            // Calculate exact height dynamically
+            val h = if (textPlaceable != null) {
+                hTop + dotPlaceable.height / 2f + spacing + textPlaceable.height + paddingBottom
+            } else {
+                hTop + dotPlaceable.height / 2f + paddingBottom
+            }
+
+            layout(w.toInt(), h.toInt()) {
+                // Place dot centered exactly at hTop
+                val dotX = (w - dotPlaceable.width) / 2f
+                val dotY = hTop - dotPlaceable.height / 2f
+                dotPlaceable.place(dotX.toInt(), dotY.toInt())
+
+                // Place text below dot
+                if (textPlaceable != null) {
+                    val textX = (w - textPlaceable.width) / 2f
+                    val textY = hTop + dotPlaceable.height / 2f + spacing
+                    textPlaceable.place(textX.toInt(), textY.toInt())
+                }
             }
         }
     }
