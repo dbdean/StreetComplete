@@ -61,7 +61,7 @@ fun PointerPinButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(
         backgroundColor = MaterialTheme.colors.surface,
     ),
-    contentPadding: Dp = 8.dp,
+    contentPadding: Dp = 5.dp,
     rotate: Float = 0f,
     distance: String? = null,
     content: @Composable (BoxScope.() -> Unit),
