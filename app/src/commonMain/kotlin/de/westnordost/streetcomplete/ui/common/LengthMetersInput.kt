@@ -14,8 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.osm.Length
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.input.DecimalInput
 import de.westnordost.streetcomplete.util.ktx.toShortString
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 
 /** Input field to input a length in meters */
@@ -50,7 +52,7 @@ fun LengthMetersInput(
                 style = style,
             )
         }
-        Text("m")
+        Text(stringResource(Res.string.meters_symbol))
     }
 }
 

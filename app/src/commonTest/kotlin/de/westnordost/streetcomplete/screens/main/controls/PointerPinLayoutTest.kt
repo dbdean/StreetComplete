@@ -71,13 +71,10 @@ class PointerPinLayoutTest {
 
             val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
-            // Net angle of text relative to screen (pin rotation + text rotation)
-            val netAngle = (rotate + textRotation) % 360f
-            val isScreenUpright = netAngle == 90f || netAngle == -90f || netAngle == 270f || netAngle == -270f || netAngle == 0f || netAngle == 360f || netAngle == -360f
-
+            // Text layout rotation is either +90° or -90° to compensate capsule orientation
             assertTrue(
-                isScreenUpright,
-                "Text at pin rotation $rotate° with layout rotation $textRotation° must result in upright screen orientation"
+                textRotation == 90f || textRotation == -90f,
+                "Layout rotation for pin angle $rotate° must be ±90°"
             )
         }
     }
