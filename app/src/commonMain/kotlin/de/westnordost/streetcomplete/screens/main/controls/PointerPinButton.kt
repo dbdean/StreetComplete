@@ -32,6 +32,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
@@ -199,55 +201,21 @@ private class PointerPinShape : Shape {
         layoutDirection: LayoutDirection,
         density: Density
     ): Outline {
-        val path = Path()
         val w = size.width
         val h = size.height
-        val r = w / 2f
+        // Path base width is 76f. dh is the extended vertical length in SVG coordinate space.
+        val baseH = 76f
+        val dh = ((h / w) * 76f - baseH).coerceAtLeast(0f)
 
-        // Original pointer geometry ratios (based on radius R = 24, tip distance = 38):
-        val hTop = (38f / 24f) * r
-        val dx = -0.78735f * r
-        val dy = -0.61596f * r
-
-        // Tip is at (w/2, 0)
-        path.moveTo(w / 2f, 0f)
-        
-        // Line to left shoulder transition point
-        path.lineTo(w / 2f + dx, hTop + dy)
-        
-        // Arc from left shoulder to left vertical edge (0, hTop)
-        path.arcTo(
-            rect = Rect(w / 2f - r, hTop - r, w / 2f + r, hTop + r),
-            startAngleDegrees = 218f,
-            sweepAngleDegrees = -38f,
-            forceMoveTo = false
+        val pathString = "M 38,${62f + dh} C 24.745,${62f + dh} 14,${51.255f + dh} 14,${38f + dh} L 14,38 C 14.003,32.6405 15.7995,27.4365 19.1035,23.217 L 38,0 56.914,23.2715 C 60.2005,27.4785 61.99,32.6615 62,38 L 62,${38f + dh} C 62,${51.255f + dh} 51.255,${62f + dh} 38,${62f + dh} Z"
+        val p = PathParser().parsePathString(pathString).toNodes().toPath()
+        val m = Matrix()
+        m.scale(
+            x = w / 76f,
+            y = h / (baseH + dh)
         )
-        
-        // Line down to bottom-left curve start
-        path.lineTo(0f, h - r)
-        
-        // Bottom curve (semi-circle arc)
-        path.arcTo(
-            rect = Rect(0f, h - 2f * r, w, h),
-            startAngleDegrees = 180f,
-            sweepAngleDegrees = -180f,
-            forceMoveTo = false
-        )
-        
-        // Line up to right vertical edge end
-        path.lineTo(w, hTop)
-        
-        // Arc from right vertical edge to right shoulder transition point
-        path.arcTo(
-            rect = Rect(w / 2f - r, hTop - r, w / 2f + r, hTop + r),
-            startAngleDegrees = 0f,
-            sweepAngleDegrees = -38f,
-            forceMoveTo = false
-        )
-        
-        path.close()
-
-        return Outline.Generic(path)
+        p.transform(m)
+        return Outline.Generic(p)
     }
 }
 
