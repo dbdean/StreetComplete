@@ -2,8 +2,6 @@ package de.westnordost.streetcomplete.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
-import de.westnordost.streetcomplete.data.meta.LengthUnit
-import de.westnordost.streetcomplete.osm.Length
 import de.westnordost.streetcomplete.resources.*
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -48,29 +46,6 @@ object DistanceFormatter {
     @Composable
     fun format(distanceInMeters: Double): String =
         format(distanceInMeters, defaultUnitSystem())
-
-    /**
-     * Formats a Length domain object into a clean, localized display string.
-     */
-    @Composable
-    fun format(length: Length): String = when (length) {
-        is Length.Meters -> format(length.meters, UnitSystem.METRIC)
-        is Length.FeetAndInches -> "${length.feet}′${length.inches}″"
-    }
-
-    /**
-     * Formats a raw distance in meters to a clean, localized string based on a specific LengthUnit.
-     */
-    @Composable
-    fun format(distanceInMeters: Double, unit: LengthUnit): String = when (unit) {
-        LengthUnit.METER -> format(distanceInMeters, UnitSystem.METRIC)
-        LengthUnit.FOOT_AND_INCH -> {
-            val totalInches = (distanceInMeters / 0.0254).roundToInt()
-            val feet = totalInches / 12
-            val inches = totalInches % 12
-            "$feet′$inches″"
-        }
-    }
 
     /**
      * Formats a raw distance in meters to a clean, localized string.
