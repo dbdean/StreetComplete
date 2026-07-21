@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.ktx.proportionalAbsoluteOffset
+import de.westnordost.streetcomplete.util.DistanceFormatter
 import de.westnordost.streetcomplete.ui.ktx.proportionalPadding
 import de.westnordost.streetcomplete.ui.theme.divider
 import org.jetbrains.compose.resources.painterResource
@@ -65,9 +66,10 @@ fun PointerPinButton(
     ),
     contentPadding: Dp = 5.dp,
     rotate: Float = 0f,
-    distance: String? = null,
+    distanceInMeters: Double? = null,
     content: @Composable (BoxScope.() -> Unit),
 ) {
+    val distanceText = distanceInMeters?.takeIf { it > 0.0 }?.let { DistanceFormatter.format(it) }
     val pointerPinShape = remember { PointerPinShape() }
 
     Surface(
@@ -87,7 +89,7 @@ fun PointerPinButton(
         androidx.compose.ui.layout.Layout(
             content = {
                 Box(modifier = Modifier.size(24.dp)) { content() }
-                if (distance != null) {
+                if (distanceText != null) {
                     // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
                     var normalizedRotate = rotate % 360f
                     if (normalizedRotate > 180f) normalizedRotate -= 360f
@@ -97,7 +99,7 @@ fun PointerPinButton(
                     val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
                     Text(
-                        text = distance,
+                        text = distanceText,
                         style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
                         color = MaterialTheme.colors.onSurface,
                         maxLines = 1,
@@ -227,7 +229,7 @@ private fun PreviewPointerPinButton() {
         0f, 360f,
         infiniteRepeatable(tween(12000, 0, LinearEasing)),
     )
-    PointerPinButton(onClick = {}, rotate = rotation, distance = "120 m") {
+    PointerPinButton(onClick = {}, rotate = rotation, distanceInMeters = 120.0) {
         Image(
             painter = painterResource(Res.drawable.location_dot_small),
             contentDescription = null,

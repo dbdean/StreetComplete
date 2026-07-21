@@ -44,15 +44,15 @@ object DistanceFormatter {
      * Formats a raw distance in meters to a clean, localized string using the system default unit system.
      */
     @Composable
-    fun format(meters: Double): String =
-        format(meters, defaultUnitSystem())
+    fun format(distanceInMeters: Double): String =
+        format(distanceInMeters, defaultUnitSystem())
 
     /**
      * Formats a raw distance in meters to a clean, localized string.
      */
     @Composable
-    fun format(meters: Double, system: UnitSystem): String {
-        val distanceInUnit = meters / system.unitInMeters
+    fun format(distanceInMeters: Double, system: UnitSystem): String {
+        val distanceInUnit = distanceInMeters / system.unitInMeters
         return if (distanceInUnit >= system.limit) {
             val valueInLargerUnit = distanceInUnit / system.limit
             val roundedLargerUnit = (valueInLargerUnit * 10.0).roundToInt() / 10.0

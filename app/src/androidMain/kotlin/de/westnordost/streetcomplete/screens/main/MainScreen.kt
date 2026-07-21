@@ -258,12 +258,11 @@ fun MainScreen(
             val totalDistPx = displayedPosition?.let { (it - screen!!.center).getDistance() } ?: 0f
             val edgeDistPx = (offset - screen!!.center).getDistance()
             val distanceMeters = (totalDistPx - edgeDistPx).pxToDp().value.toDouble() * metersPerDp
-            val distanceText = if (distanceMeters > 0.0) DistanceFormatter.format(distanceMeters) else null
 
             PointerPinButton(
                 onClick = onClickLocationPointer,
                 rotate = rotation.toFloat(),
-                distance = distanceText,
+                distanceInMeters = distanceMeters,
                 modifier = Modifier.absoluteOffset(offset.x.pxToDp(), offset.y.pxToDp()),
             ) { Image(painterResource(Res.drawable.location_dot_small), null) }
         }

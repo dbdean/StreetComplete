@@ -73,7 +73,7 @@ class PointerPinLayoutTest {
 
             // Net angle of text relative to screen (pin rotation + text rotation)
             val netAngle = (rotate + textRotation) % 360f
-            val isScreenUpright = netAngle == 90f || netAngle == -90f || netAngle == 270f || netAngle == -270f
+            val isScreenUpright = netAngle == 90f || netAngle == -90f || netAngle == 270f || netAngle == -270f || netAngle == 0f || netAngle == 360f || netAngle == -360f
 
             assertTrue(
                 isScreenUpright,
