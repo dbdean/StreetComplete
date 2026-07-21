@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
@@ -17,12 +16,6 @@ object DistanceFormatter {
             fun fromRegion(region: String?): UnitSystem = when (region) {
                 in regionsUsingFeetAndMiles -> IMPERIAL_FEET
                 in regionsUsingYardsAndMiles -> IMPERIAL_YARDS
-                else -> METRIC
-            }
-
-            fun fromMeasure(measure: ScaleBarMeasure): UnitSystem = when (measure) {
-                ScaleBarMeasure.FeetAndMiles -> IMPERIAL_FEET
-                ScaleBarMeasure.YardsAndMiles -> IMPERIAL_YARDS
                 else -> METRIC
             }
         }
@@ -48,25 +41,11 @@ object DistanceFormatter {
         systemDefaultUnitSystem() ?: UnitSystem.fromRegion(region)
 
     /**
-     * Formats a raw distance in meters to a clean, localized string based on ScaleBarMeasure.
-     */
-    @Composable
-    fun format(meters: Double, measure: ScaleBarMeasure): String =
-        format(meters, UnitSystem.fromMeasure(measure))
-
-    /**
      * Formats a raw distance in meters to a clean, localized string using the system default unit system.
      */
     @Composable
     fun format(meters: Double): String =
         format(meters, defaultUnitSystem())
-
-    /**
-     * Formats a raw distance in meters to a clean, localized string based on locale region.
-     */
-    @Composable
-    fun format(meters: Double, region: String?): String =
-        format(meters, UnitSystem.fromRegion(region))
 
     /**
      * Formats a raw distance in meters to a clean, localized string.

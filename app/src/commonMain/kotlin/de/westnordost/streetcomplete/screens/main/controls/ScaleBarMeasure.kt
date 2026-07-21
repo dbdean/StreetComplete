@@ -2,12 +2,10 @@ package de.westnordost.streetcomplete.screens.main.controls
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
-import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.FeetAndMiles
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.Metric
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure.YardsAndMiles
 import de.westnordost.streetcomplete.util.DistanceFormatter
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.pow
 
 /** A measure to show in the scale bar */
@@ -67,7 +65,10 @@ interface ScaleBarMeasure {
         @Composable
         override fun getText(stop: Double): String =
             DistanceFormatter.format(stop * unitInMeters, DistanceFormatter.UnitSystem.IMPERIAL_YARDS)
+    }
+
     companion object {
+        /** Returns the [ScaleBarMeasure] corresponding to the given [DistanceFormatter.UnitSystem]. */
         fun from(unitSystem: DistanceFormatter.UnitSystem): ScaleBarMeasure =
             when (unitSystem) {
                 DistanceFormatter.UnitSystem.IMPERIAL_FEET -> FeetAndMiles
@@ -97,8 +98,7 @@ internal fun defaultSecondaryMeasure(primary: ScaleBarMeasure, region: String? =
     }
 
 /**
- * default scale bar measures to use, depending on the user's locale (or system preferences, if
- * available)
+ * Default scale bar measures to use based on [DistanceFormatter.defaultUnitSystem].
  */
 @Composable
 internal fun defaultScaleBarMeasures(): ScaleBarMeasures {
