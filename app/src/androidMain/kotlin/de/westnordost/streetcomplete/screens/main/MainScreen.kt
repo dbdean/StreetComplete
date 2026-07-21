@@ -95,7 +95,6 @@ import de.westnordost.streetcomplete.ui.common.UndoIcon
 import de.westnordost.streetcomplete.ui.ktx.dir
 import de.westnordost.streetcomplete.ui.ktx.pxToDp
 import de.westnordost.streetcomplete.util.DistanceFormatter
-import de.westnordost.streetcomplete.util.ktx.sendErrorReportEmail
 import de.westnordost.streetcomplete.util.ktx.toast
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -250,7 +249,6 @@ fun MainScreen(
         }
 
         var screen by remember { mutableStateOf<Rect?>(null) }
-        val scaleBarMeasures = defaultScaleBarMeasures()
         val intersection = remember(displayedPosition, screen) {
             findEllipsisIntersection(screen, displayedPosition)
         }
@@ -260,12 +258,7 @@ fun MainScreen(
             val totalDistPx = displayedPosition?.let { (it - screen!!.center).getDistance() } ?: 0f
             val edgeDistPx = (offset - screen!!.center).getDistance()
             val distanceMeters = (totalDistPx - edgeDistPx).pxToDp().value.toDouble() * metersPerDp
-            val unitSystem = when (scaleBarMeasures.primary) {
-                ScaleBarMeasure.FeetAndMiles -> DistanceFormatter.UnitSystem.IMPERIAL_FEET
-                ScaleBarMeasure.YardsAndMiles -> DistanceFormatter.UnitSystem.IMPERIAL_YARDS
-                else -> DistanceFormatter.UnitSystem.METRIC
-            }
-            val distanceText = if (distanceMeters > 0.0) DistanceFormatter.format(distanceMeters, unitSystem) else null
+            val distanceText = if (distanceMeters > 0.0) DistanceFormatter.format(distanceMeters) else null
 
             PointerPinButton(
                 onClick = onClickLocationPointer,

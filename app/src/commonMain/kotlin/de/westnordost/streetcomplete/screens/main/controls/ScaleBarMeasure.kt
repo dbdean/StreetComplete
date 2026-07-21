@@ -67,6 +67,13 @@ interface ScaleBarMeasure {
         @Composable
         override fun getText(stop: Double): String =
             DistanceFormatter.format(stop * unitInMeters, DistanceFormatter.UnitSystem.IMPERIAL_YARDS)
+    companion object {
+        fun from(unitSystem: DistanceFormatter.UnitSystem): ScaleBarMeasure =
+            when (unitSystem) {
+                DistanceFormatter.UnitSystem.IMPERIAL_FEET -> FeetAndMiles
+                DistanceFormatter.UnitSystem.IMPERIAL_YARDS -> YardsAndMiles
+                DistanceFormatter.UnitSystem.METRIC -> Metric
+            }
     }
 }
 
@@ -75,76 +82,19 @@ private fun buildStops(mantissas: List<Int>, exponents: IntRange) = buildList {
     for (e in exponents) for (m in mantissas) add(m * 10.0.pow(e))
 }
 
-/** use system locale APIs for the primary scale bar measure */
-@Composable internal expect fun systemDefaultPrimaryMeasure(): ScaleBarMeasure?
-
-/** if the system APIs don't provide a primary measure, fall back to our hardcoded lists */
-internal fun fallbackDefaultPrimaryMeasure(region: String?): ScaleBarMeasure =
-    when (region) {
-        in regionsUsingFeetAndMiles -> FeetAndMiles
-        in regionsUsingYardsAndMiles -> YardsAndMiles
-        else -> Metric
-    }
-
 /** countries using non-metric units will see both systems by default */
-internal fun defaultSecondaryMeasure(primary: ScaleBarMeasure, region: String?): ScaleBarMeasure? =
+internal fun defaultSecondaryMeasure(primary: ScaleBarMeasure, region: String? = Locale.current.region): ScaleBarMeasure? =
     when (primary) {
         FeetAndMiles -> Metric
         YardsAndMiles -> Metric
         Metric ->
-            when (region) {
-                in regionsUsingFeetAndMiles -> FeetAndMiles
-                in regionsUsingYardsAndMiles -> YardsAndMiles
-                else -> null
+            when (DistanceFormatter.UnitSystem.fromRegion(region)) {
+                DistanceFormatter.UnitSystem.IMPERIAL_FEET -> FeetAndMiles
+                DistanceFormatter.UnitSystem.IMPERIAL_YARDS -> YardsAndMiles
+                DistanceFormatter.UnitSystem.METRIC -> null
             }
         else -> null // should never happen because the primary is always one of the above
     }
-
-private val regionsUsingFeetAndMiles =
-    setOf(
-        // United states and its unincorporated territories
-        "US",
-        "AS",
-        "GU",
-        "MP",
-        "PR",
-        "VI",
-        // former United states territories / Compact of Free Association
-        "FM",
-        "MH",
-        "PW",
-        // Liberia
-        "LR",
-    )
-
-private val regionsUsingYardsAndMiles =
-    setOf(
-        // United kingdom with its overseas territories and crown dependencies
-        "GB",
-        "AI",
-        "BM",
-        "FK",
-        "GG",
-        "GI",
-        "GS",
-        "IM",
-        "IO",
-        "JE",
-        "KY",
-        "MS",
-        "PN",
-        "SH",
-        "TC",
-        "VG",
-        // former British overseas territories / colonies
-        "BS",
-        "BZ",
-        "GD",
-        "KN",
-        "VC",
-        // Myanmar
-        "MM",
-    )
 
 /**
  * default scale bar measures to use, depending on the user's locale (or system preferences, if
@@ -152,7 +102,7 @@ private val regionsUsingYardsAndMiles =
  */
 @Composable
 internal fun defaultScaleBarMeasures(): ScaleBarMeasures {
-    val region = Locale.current.region
-    val primary = systemDefaultPrimaryMeasure() ?: fallbackDefaultPrimaryMeasure(region)
-    return ScaleBarMeasures(primary = primary, secondary = defaultSecondaryMeasure(primary, region))
+    val primarySystem = DistanceFormatter.defaultUnitSystem()
+    val primary = ScaleBarMeasure.from(primarySystem)
+    return ScaleBarMeasures(primary = primary, secondary = defaultSecondaryMeasure(primary))
 }
