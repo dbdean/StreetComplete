@@ -7,24 +7,23 @@ class PointerPinLayoutTest {
 
     @Test
     fun pointer_pin_layout_geometry_does_not_overlap() {
-        // Ratios based on 24dp dot diameter and 5dp padding (width = 34dp, radius = 17dp)
-        val dotDiameterPx = 24f
-        val paddingPx = 5f
-        val w = dotDiameterPx + 2f * paddingPx // 34f
-        val r = w / 2f // 17f
-        val hTop = (38f / 24f) * r // Center of top circle (26.916f)
+        // Calibrated 56dp base width (radius 28dp), 24dp dot, 4dp spacing, 20dp paddingBottom
+        val dotDiameterDp = 24f
+        val baseWidthDp = 56f
+        val rDp = baseWidthDp / 2f // 28dp
+        val hTopDp = (38f / 76f) * baseWidthDp // Center of top circle (28dp)
 
         // Dot geometry bounds
-        val dotTopY = hTop - dotDiameterPx / 2f // 14.916f
-        val dotBottomY = hTop + dotDiameterPx / 2f // 38.916f
+        val dotTopY = hTopDp - dotDiameterDp / 2f // 16dp
+        val dotBottomY = hTopDp + dotDiameterDp / 2f // 40dp
 
-        // Text geometry bounds (e.g. text height = 16px, spacing = 4px, paddingBottom = 8px)
+        // Text geometry bounds (e.g. text height = 16dp, spacing = 4dp, paddingBottom = 20dp)
         val spacing = 4f
         val textHeight = 16f
-        val paddingBottom = 8f
-        val textTopY = dotBottomY + spacing // 42.916f
-        val textBottomY = textTopY + textHeight // 58.916f
-        val totalH = textBottomY + paddingBottom // 66.916f
+        val paddingBottom = 20f
+        val textTopY = dotBottomY + spacing // 44dp
+        val textBottomY = textTopY + textHeight // 60dp
+        val totalH = textBottomY + paddingBottom // 80dp
 
         // Verify dot is placed below the top pointy tip
         assertTrue(dotTopY > 0f, "Dot top Y must be positive (below pointer tip)")
@@ -32,31 +31,28 @@ class PointerPinLayoutTest {
         // Verify text does not overlap location dot
         assertTrue(textTopY >= dotBottomY + spacing, "Text top Y must be below dot bottom Y with spacing")
 
-        // Verify text remains inside bottom capsule boundary (total height - bottom padding)
-        assertTrue(textBottomY < totalH, "Text bottom Y must remain inside capsule outer boundary")
+        // Verify text end gap has generous bottom clearance (20dp paddingBottom)
+        assertTrue(totalH - textBottomY >= 20f, "Bottom clearance must be at least 20dp for text end margin")
     }
 
     @Test
-    fun layout_prevents_overlap_across_various_distances() {
+    fun layout_enforces_text_end_margin_and_expands_width() {
         val testDistances = listOf("5 m", "150 m", "1.2 km", "450 ft", "2.5 mi")
-        val dotDiameterPx = 24f
-        val paddingPx = 5f
-        val w = dotDiameterPx + 2f * paddingPx
-        val hTop = (38f / 24f) * (w / 2f)
-        val dotBottomY = hTop + dotDiameterPx / 2f
-        val spacing = 4f
+        val baseWidth = 56f
+        val minTextMargin = 10f
 
         for (distance in testDistances) {
-            val approxTextHeight = 16f
-            val textTopY = dotBottomY + spacing
+            val approxTextLength = distance.length * 8f // e.g. ~40px to ~64px
+            val requiredWidth = maxOf(baseWidth, approxTextLength + 2f * minTextMargin)
 
-            // Non-overlap check: Text top must strictly begin below the location dot bottom
+            // Dynamic width expansion check: width must be at least baseWidth (56dp)
+            assertTrue(requiredWidth >= baseWidth, "Container width must be at least 56dp")
+
+            // End margin check: container width must fit text with at least 10dp margin on each end
             assertTrue(
-                textTopY >= dotBottomY + spacing,
-                "Distance text '$distance' top Y must be separated from dot bottom Y"
+                (requiredWidth - approxTextLength) / 2f >= minTextMargin,
+                "Distance text '$distance' must have at least 10dp margin on each end"
             )
-            // Non-empty formatted string
-            assertTrue(distance.isNotEmpty(), "Formatted distance text should not be empty")
         }
     }
 

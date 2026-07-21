@@ -64,7 +64,7 @@ fun PointerPinButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(
         backgroundColor = MaterialTheme.colors.surface,
     ),
-    contentPadding: Dp = 5.dp,
+    contentPadding: Dp = 12.dp,
     rotate: Float = 0f,
     distanceInMeters: Double? = null,
     content: @Composable (BoxScope.() -> Unit),
@@ -109,18 +109,23 @@ fun PointerPinButton(
                 }
             }
         ) { measurables, constraints ->
-            val paddingPx = contentPadding.toPx()
-            val w = (24.dp.toPx() + 2f * paddingPx) // Fixed base width matching dot + padding
-            val r = w / 2f
-            val hTop = (38f / 24f) * r
-
             val dotPlaceable = measurables[0].measure(constraints.copy(minWidth = 0, minHeight = 0))
             val textPlaceable = if (measurables.size > 1) {
                 measurables[1].measure(constraints.copy(minWidth = 0, minHeight = 0))
             } else null
 
+            val baseWidth = 56.dp.toPx() // 56dp width (radius 28dp), sweet spot between 48dp and 65.7dp
+            val textMargin = 10.dp.toPx() // Clean 10dp margin at each end of text string
+            val w = if (textPlaceable != null) {
+                maxOf(baseWidth, textPlaceable.width + 2f * textMargin)
+            } else baseWidth
+
+            val r = w / 2f
+            // In 76-unit SVG space, pointy tip is y=0, circle center is y=38 out of 76 (28dp from tip)
+            val hTop = (38f / 76f) * w
+
             val spacing = 4.dp.toPx()
-            val paddingBottom = 8.dp.toPx()
+            val paddingBottom = 20.dp.toPx()
 
             // Calculate exact height dynamically
             val h = if (textPlaceable != null) {
@@ -209,7 +214,7 @@ private class PointerPinShape : Shape {
         val baseH = 76f
         val dh = ((h / w) * 76f - baseH).coerceAtLeast(0f)
 
-        val pathString = "M 38,${62f + dh} C 24.745,${62f + dh} 14,${51.255f + dh} 14,${38f + dh} L 14,38 C 14.003,32.6405 15.7995,27.4365 19.1035,23.217 L 38,0 56.914,23.2715 C 60.2005,27.4785 61.99,32.6615 62,38 L 62,${38f + dh} C 62,${51.255f + dh} 51.255,${62f + dh} 38,${62f + dh} Z"
+        val pathString = "M 38,0 L 19.1035,23.217 C 15.7995,27.4365 14.003,32.6405 14,38 L 14,${38f + dh} C 14,${51.255f + dh} 24.745,${62f + dh} 38,${62f + dh} C 51.255,${62f + dh} 62,${51.255f + dh} 62,${38f + dh} L 62,38 C 61.99,32.6615 60.2005,27.4785 56.914,23.2715 Z"
         val p = PathParser().parsePathString(pathString).toNodes().toPath()
         val m = Matrix()
         m.scale(
