@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ButtonColors
@@ -86,66 +88,30 @@ fun PointerPinButton(
         border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
-        androidx.compose.ui.layout.Layout(
-            content = {
-                Box(modifier = Modifier.size(24.dp)) { content() }
-                if (distanceText != null) {
-                    // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
-                    var normalizedRotate = rotate % 360f
-                    if (normalizedRotate > 180f) normalizedRotate -= 360f
-                    if (normalizedRotate < -180f) normalizedRotate += 360f
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(top = 16.dp, bottom = 20.dp, start = 12.dp, end = 12.dp)
+        ) {
+            Box(modifier = Modifier.size(24.dp)) { content() }
+            if (distanceText != null) {
+                // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
+                var normalizedRotate = rotate % 360f
+                if (normalizedRotate > 180f) normalizedRotate -= 360f
+                if (normalizedRotate < -180f) normalizedRotate += 360f
 
-                    // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
-                    val textRotation = if (normalizedRotate > 0f) -90f else 90f
+                // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
+                val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
-                    Text(
-                        text = distanceText,
-                        style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
-                        color = MaterialTheme.colors.onSurface,
-                        maxLines = 1,
-                        softWrap = false,
-                        modifier = Modifier.rotateLayout(textRotation)
-                    )
-                }
-            }
-        ) { measurables, constraints ->
-            val dotPlaceable = measurables[0].measure(constraints.copy(minWidth = 0, minHeight = 0))
-            val textPlaceable = if (measurables.size > 1) {
-                measurables[1].measure(constraints.copy(minWidth = 0, minHeight = 0))
-            } else null
-
-            val baseWidth = 56.dp.toPx() // 56dp width (radius 28dp), sweet spot between 48dp and 65.7dp
-            val textMargin = 10.dp.toPx() // Clean 10dp margin at each end of text string
-            val w = if (textPlaceable != null) {
-                maxOf(baseWidth, textPlaceable.width + 2f * textMargin)
-            } else baseWidth
-
-            val r = w / 2f
-            // In 76-unit SVG space, pointy tip is y=0, circle center is y=38 out of 76 (28dp from tip)
-            val hTop = (38f / 76f) * w
-
-            val spacing = 4.dp.toPx()
-            val paddingBottom = 20.dp.toPx()
-
-            // Calculate exact height dynamically
-            val h = if (textPlaceable != null) {
-                hTop + dotPlaceable.height / 2f + spacing + textPlaceable.height + paddingBottom
-            } else {
-                hTop + dotPlaceable.height / 2f + paddingBottom
-            }
-
-            layout(w.toInt(), h.toInt()) {
-                // Place dot centered exactly at hTop
-                val dotX = (w - dotPlaceable.width) / 2f
-                val dotY = hTop - dotPlaceable.height / 2f
-                dotPlaceable.place(dotX.toInt(), dotY.toInt())
-
-                // Place text below dot
-                if (textPlaceable != null) {
-                    val textX = (w - textPlaceable.width) / 2f
-                    val textY = hTop + dotPlaceable.height / 2f + spacing
-                    textPlaceable.place(textX.toInt(), textY.toInt())
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = distanceText,
+                    style = MaterialTheme.typography.caption.copy(fontSize = 12.sp),
+                    color = MaterialTheme.colors.onSurface,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.rotateLayout(textRotation)
+                )
             }
         }
     }
