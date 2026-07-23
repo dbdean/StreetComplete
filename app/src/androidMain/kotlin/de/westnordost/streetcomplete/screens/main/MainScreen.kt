@@ -45,7 +45,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
@@ -69,9 +68,6 @@ import de.westnordost.streetcomplete.screens.main.controls.QuickSettingsDropdown
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBar
 import de.westnordost.streetcomplete.screens.main.controls.StarsCounter
 import de.westnordost.streetcomplete.screens.main.controls.ZoomButtons
-import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasure
-import de.westnordost.streetcomplete.screens.main.controls.ScaleBarMeasures
-import de.westnordost.streetcomplete.screens.main.controls.defaultScaleBarMeasures
 import de.westnordost.streetcomplete.screens.main.controls.findEllipsisIntersection
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistorySidebar
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistoryViewModel
