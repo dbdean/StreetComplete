@@ -180,7 +180,7 @@ private class PointerPinShape : Shape {
         val baseH = 76f
         val dh = ((h / w) * 76f - baseH).coerceAtLeast(0f)
 
-        val pathString = "M 38,0 L 19.1035,23.217 C 15.7995,27.4365 14.003,32.6405 14,38 L 14,${38f + dh} C 14,${51.255f + dh} 24.745,${62f + dh} 38,${62f + dh} C 51.255,${62f + dh} 62,${51.255f + dh} 62,${38f + dh} L 62,38 C 61.99,32.6615 60.2005,27.4785 56.914,23.2715 Z"
+        val pathString = "M 38,${62f + dh} C 24.745,${62f + dh} 14,${51.255f + dh} 14,${38f + dh} L 14,38 C 14.003,32.6405 15.7995,27.4365 19.1035,23.217 L 38,0 56.914,23.2715 C 60.2005,27.4785 61.99,32.6615 62,38 L 62,${38f + dh} C 62,${51.255f + dh} 51.255,${62f + dh} 38,${62f + dh} Z"
         val p = PathParser().parsePathString(pathString).toNodes().toPath()
         val m = Matrix()
         m.scale(
