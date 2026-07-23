@@ -77,6 +77,10 @@ fun PointerPinButton(
     val pointerPinShape = remember { PointerPinShape() }
     val a = (rotate * PI / 180f).toFloat()
 
+    // Base horizontal shape tip is at (0, h/2) pointing LEFT.
+    // Rotating by (rotate + 90°) points tip UP at rotate=0° and rotates clockwise with map angle.
+    val outerRotation = rotate + 90f
+
     Surface(
         onClick = onClick,
         modifier = modifier
@@ -85,13 +89,13 @@ fun PointerPinButton(
                 val placeable = measurable.measure(constraints)
                 val w = placeable.width.toFloat()
                 val h = placeable.height.toFloat()
-                val xFactor = -0.5f - (w / (2f * h)) * sin(a)
-                val yFactor = -0.5f + 0.5f * cos(a)
+                val xFactor = -0.5f - 0.5f * sin(a)
+                val yFactor = -0.5f + (w / (2f * h)) * cos(a)
                 layout(placeable.width, placeable.height) {
                     placeable.place((xFactor * w).toInt(), (yFactor * h).toInt())
                 }
             }
-            .graphicsLayer { rotationZ = rotate },
+            .graphicsLayer { rotationZ = outerRotation },
         enabled = enabled,
         shape = pointerPinShape,
         color = colors.backgroundColor(enabled).value,
@@ -105,8 +109,11 @@ fun PointerPinButton(
         ) {
             Box(modifier = Modifier.size(24.dp)) { content() }
             if (distanceText != null) {
-                // Keep text upright on screen by counter-rotating by -rotate
-                val textRotation = -rotate
+                // Text aligns with lozenge capsule and flips 180° when needed so it is never upside down
+                var normRotation = outerRotation % 360f
+                if (normRotation > 180f) normRotation -= 360f
+                if (normRotation < -180f) normRotation += 360f
+                val textRotation = if (normRotation > 90f || normRotation < -90f) 180f else 0f
 
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
