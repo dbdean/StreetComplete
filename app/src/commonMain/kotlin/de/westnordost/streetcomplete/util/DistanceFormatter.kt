@@ -33,6 +33,10 @@ object DistanceFormatter {
         "MM",
     )
 
+    enum class DisplayUnit {
+        METERS, KILOMETERS, FEET, YARDS, MILES
+    }
+
     /**
      * Resolves the default UnitSystem for the current device (checking system measurement settings first, falling back to locale region).
      */
@@ -48,27 +52,61 @@ object DistanceFormatter {
         format(distanceInMeters, defaultUnitSystem())
 
     /**
-     * Formats a raw distance in meters to a clean, localized string.
+     * Formats a raw distance in meters to a clean, localized string using Compose string resources.
      */
     @Composable
     fun format(distanceInMeters: Double, system: UnitSystem): String {
+        val meters = stringResource(Res.string.meters_symbol)
+        val kilometers = stringResource(Res.string.kilometers_symbol)
+        val feet = stringResource(Res.string.feet_symbol)
+        val yards = stringResource(Res.string.yards_symbol)
+        val miles = stringResource(Res.string.miles_symbol)
+
+        return format(distanceInMeters, system) { unit ->
+            when (unit) {
+                DisplayUnit.METERS -> meters
+                DisplayUnit.KILOMETERS -> kilometers
+                DisplayUnit.FEET -> feet
+                DisplayUnit.YARDS -> yards
+                DisplayUnit.MILES -> miles
+            }
+        }
+    }
+
+    /**
+     * Non-composable core distance formatter that converts meters to the target unit system
+     * and applies number rounding. Accepts a symbol provider for unit testing without Compose runtime.
+     */
+    fun format(
+        distanceInMeters: Double,
+        system: UnitSystem,
+        getSymbol: (DisplayUnit) -> String
+    ): String {
+        val (value, unit) = formatToValueAndUnit(distanceInMeters, system)
+        return formatForDisplay(value, getSymbol(unit))
+    }
+
+    /**
+     * Converts distance in meters to a rounded value and target display unit.
+     */
+    fun formatToValueAndUnit(distanceInMeters: Double, system: UnitSystem): Pair<Double, DisplayUnit> {
         val distanceInUnit = distanceInMeters / system.unitInMeters
         return if (distanceInUnit >= system.limit) {
             val valueInLargerUnit = distanceInUnit / system.limit
             val roundedLargerUnit = (valueInLargerUnit * 10.0).roundToInt() / 10.0
-            val symbol = when (system) {
-                UnitSystem.METRIC -> stringResource(Res.string.kilometers_symbol)
-                else -> stringResource(Res.string.miles_symbol)
+            val unit = when (system) {
+                UnitSystem.METRIC -> DisplayUnit.KILOMETERS
+                else -> DisplayUnit.MILES
             }
-            formatForDisplay(roundedLargerUnit, symbol)
+            Pair(roundedLargerUnit, unit)
         } else {
             val roundedUnit = distanceInUnit.roundToInt().toDouble()
-            val symbol = when (system) {
-                UnitSystem.METRIC -> stringResource(Res.string.meters_symbol)
-                UnitSystem.IMPERIAL_FEET -> stringResource(Res.string.feet_symbol)
-                UnitSystem.IMPERIAL_YARDS -> stringResource(Res.string.yards_symbol)
+            val unit = when (system) {
+                UnitSystem.METRIC -> DisplayUnit.METERS
+                UnitSystem.IMPERIAL_FEET -> DisplayUnit.FEET
+                UnitSystem.IMPERIAL_YARDS -> DisplayUnit.YARDS
             }
-            formatForDisplay(roundedUnit, symbol)
+            Pair(roundedUnit, unit)
         }
     }
 
