@@ -73,14 +73,22 @@ fun PointerPinButton(
 ) {
     val distanceText = distanceInMeters?.takeIf { it > 0.0 }?.let { DistanceFormatter.format(it) }
     val pointerPinShape = remember { PointerPinShape() }
+    val a = (rotate * PI / 180f).toFloat()
 
     Surface(
         onClick = onClick,
         modifier = modifier
-            .pointerPinOffset(rotate)
-            .graphicsLayer {
-                rotationZ = rotate
-            },
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                val w = placeable.width.toFloat()
+                val h = placeable.height.toFloat()
+                val xFactor = -0.5f - (h / (2f * w)) * sin(a)
+                val yFactor = -0.5f + 0.5f * cos(a)
+                layout(placeable.width, placeable.height) {
+                    placeable.place((xFactor * w).toInt(), (yFactor * h).toInt())
+                }
+            }
+            .graphicsLayer { rotationZ = rotate },
         enabled = enabled,
         shape = pointerPinShape,
         color = colors.backgroundColor(enabled).value,
@@ -90,17 +98,13 @@ fun PointerPinButton(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = 16.dp, bottom = 20.dp, start = 12.dp, end = 12.dp)
+            modifier = Modifier.padding(top = 16.dp, bottom = 20.dp, start = 12.dp, end = 12.dp)
         ) {
             Box(modifier = Modifier.size(24.dp)) { content() }
             if (distanceText != null) {
-                // Normalize rotate to [-180, 180] to easily detect which side it's pointing to
                 var normalizedRotate = rotate % 360f
                 if (normalizedRotate > 180f) normalizedRotate -= 360f
                 if (normalizedRotate < -180f) normalizedRotate += 360f
-
-                // Rotate text by 90 or -90 relative to capsule to keep text upright on screen
                 val textRotation = if (normalizedRotate > 0f) -90f else 90f
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -110,60 +114,10 @@ fun PointerPinButton(
                     color = MaterialTheme.colors.onSurface,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.rotateLayout(textRotation)
+                    modifier = Modifier.graphicsLayer { rotationZ = textRotation }
                 )
             }
         }
-    }
-}
-
-// A custom modifier that rotates the layout bounds along with the content
-private fun Modifier.rotateLayout(rotation: Float) = layout { measurable, constraints ->
-    val is90or270 = (rotation % 180f) != 0f
-    val rotatedConstraints = if (is90or270) {
-        constraints.copy(
-            minWidth = constraints.minHeight,
-            maxWidth = constraints.maxHeight,
-            minHeight = constraints.minWidth,
-            maxHeight = constraints.maxWidth
-        )
-    } else {
-        constraints
-    }
-    val placeable = measurable.measure(rotatedConstraints)
-    val width = if (is90or270) placeable.height else placeable.width
-    val height = if (is90or270) placeable.width else placeable.height
-    layout(width, height) {
-        if (is90or270) {
-            placeable.placeWithLayer(
-                x = (width - placeable.width) / 2,
-                y = (height - placeable.height) / 2
-            ) {
-                rotationZ = rotation
-            }
-        } else {
-            placeable.place(0, 0)
-        }
-    }
-}
-
-// A custom modifier that calculates the correct mathematical offset dynamically
-private fun Modifier.pointerPinOffset(rotate: Float) = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-    val w = placeable.width.toFloat()
-    val h = placeable.height.toFloat()
-
-    val a = (rotate * PI / 180f).toFloat()
-    val hDiv2w = h / (2f * w)
-
-    val xFactor = -0.5f - hDiv2w * sin(a)
-    val yFactor = -0.5f + 0.5f * cos(a)
-
-    layout(placeable.width, placeable.height) {
-        placeable.place(
-            x = (xFactor * w).toInt(),
-            y = (yFactor * h).toInt()
-        )
     }
 }
 
