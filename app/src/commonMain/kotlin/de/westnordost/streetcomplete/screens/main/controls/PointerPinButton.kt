@@ -47,10 +47,22 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** A view for the pointer pin that ought to be displayed at the edge of the screen. The upper left
- *  corner is always the position at which it is pointing to, i.e. it will be drawn outside of
- *  its bounds when pointing to the right.
- *  [rotate] rotates the pin. As opposed to normal rotation, the content always stays upright */
+/** A view for the pointer pin displayed at the edge of the screen.
+ *
+ *  Layout geometry:
+ *  ```
+ *        /\        <-- Pointy tip (top-center anchor)
+ *       /  \
+ *      /    \      <-- Top circular head (centered at y = w/2)
+ *     / (•)  \
+ *    |        |    <-- Location icon content (24dp)
+ *    | 120 m  |    <-- Distance text (rotated ±90° to stay upright)
+ *     \______/     <-- Extended capsule bottom curve
+ *  ```
+ *
+ *  [rotate] rotates the outer pin capsule around its tip anchor. The distance text is rotated
+ *  by ±90° relative to the capsule so it remains readable and upright on screen.
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PointerPinButton(
@@ -72,6 +84,7 @@ fun PointerPinButton(
     Surface(
         onClick = onClick,
         modifier = modifier
+            // Dynamically offsets the pin so its top pointy tip anchors precisely to screen edges
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
                 val w = placeable.width.toFloat()
@@ -92,10 +105,11 @@ fun PointerPinButton(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 16.dp, bottom = 20.dp, start = 12.dp, end = 12.dp)
+            modifier = Modifier.padding(top = 16.dp, bottom = 22.dp, start = 16.dp, end = 16.dp)
         ) {
             Box(modifier = Modifier.size(24.dp)) { content() }
             if (distanceText != null) {
+                // Keep text upright on screen by rotating +90° or -90° depending on pointing angle
                 var normalizedRotate = rotate % 360f
                 if (normalizedRotate > 180f) normalizedRotate -= 360f
                 if (normalizedRotate < -180f) normalizedRotate += 360f
@@ -124,7 +138,8 @@ private class PointerPinShape : Shape {
     ): Outline {
         val w = size.width
         val h = size.height
-        // Path base width is 76f. dh is the extended vertical length in SVG coordinate space.
+        // Path base height is 76f with top tip at (38,0) and circle center at (38,38).
+        // dh vertically elongates the capsule by extending parallel straight lines at y = 38.
         val baseH = 76f
         val dh = ((h / w) * 76f - baseH).coerceAtLeast(0f)
 
