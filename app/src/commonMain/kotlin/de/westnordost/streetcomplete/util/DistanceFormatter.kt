@@ -21,17 +21,51 @@ object DistanceFormatter {
         }
     }
 
-    private val regionsUsingFeetAndMiles = setOf(
-        "US", "AS", "GU", "MP", "PR", "VI",
-        "FM", "MH", "PW",
-        "LR",
-    )
+    private val regionsUsingFeetAndMiles =
+        setOf(
+            // United states and its unincorporated territories
+            "US",
+            "AS",
+            "GU",
+            "MP",
+            "PR",
+            "VI",
+            // former United states territories / Compact of Free Association
+            "FM",
+            "MH",
+            "PW",
+            // Liberia
+            "LR",
+        )
 
-    private val regionsUsingYardsAndMiles = setOf(
-        "GB", "AI", "BM", "FK", "GG", "GI", "GS", "IM", "IO", "JE", "KY", "MS", "PN", "SH", "TC", "VG",
-        "BS", "BZ", "GD", "KN", "VC",
-        "MM",
-    )
+    private val regionsUsingYardsAndMiles =
+        setOf(
+            // United kingdom with its overseas territories and crown dependencies
+            "GB",
+            "AI",
+            "BM",
+            "FK",
+            "GG",
+            "GI",
+            "GS",
+            "IM",
+            "IO",
+            "JE",
+            "KY",
+            "MS",
+            "PN",
+            "SH",
+            "TC",
+            "VG",
+            // former British overseas territories / colonies
+            "BS",
+            "BZ",
+            "GD",
+            "KN",
+            "VC",
+            // Myanmar
+            "MM",
+        )
 
     enum class DisplayUnit {
         METERS, KILOMETERS, FEET, YARDS, MILES
