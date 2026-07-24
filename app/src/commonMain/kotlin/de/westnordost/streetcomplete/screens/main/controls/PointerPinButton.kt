@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.screens.main.controls
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -8,9 +9,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +33,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.vector.toPath
@@ -68,10 +73,9 @@ fun PointerPinButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(
         backgroundColor = MaterialTheme.colors.surface,
     ),
-    contentPadding: Dp = 12.dp,
     rotate: Float = 0f,
     distanceInMeters: Double? = null,
-    content: @Composable (BoxScope.() -> Unit),
+    icon: Painter = painterResource(Res.drawable.location_dot_small),
 ) {
     val distanceText = distanceInMeters?.takeIf { it > 0.0 }?.let { DistanceFormatter.format(it) }
     val pointerPinShape = remember { PointerPinShape() }
@@ -107,7 +111,11 @@ fun PointerPinButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp, end = 22.dp, top = 16.dp, bottom = 16.dp)
         ) {
-            Box(modifier = Modifier.size(24.dp)) { content() }
+            Image(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
             if (distanceText != null) {
                 // Text aligns with lozenge capsule and flips 180° when needed so it is never upside down
                 var normRotation = outerRotation % 360f
@@ -155,19 +163,39 @@ private class PointerPinShape : Shape {
     }
 }
 
-@Preview
+@Preview(widthDp = 240, heightDp = 240, locale = "de")
 @Composable
 private fun PreviewPointerPinButton() {
     val infiniteTransition = rememberInfiniteTransition()
+
     val rotation by infiniteTransition.animateFloat(
-        0f, 360f,
-        infiniteRepeatable(tween(12000, 0, LinearEasing)),
-    )
-    PointerPinButton(onClick = {}, rotate = rotation, distanceInMeters = 120.0) {
-        Image(
-            painter = painterResource(Res.drawable.location_dot_small),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp)
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
         )
+    )
+
+    val distance by infiniteTransition.animateFloat(
+        initialValue = 10f,
+        targetValue = 2000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopStart
+    ) {
+        Box(modifier = Modifier.offset(x = 120.dp, y = 120.dp)) {
+            PointerPinButton(
+                onClick = {},
+                rotate = rotation,
+                distanceInMeters = distance.toDouble()
+            )
+        }
     }
 }

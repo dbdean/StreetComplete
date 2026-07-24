@@ -260,7 +260,7 @@ fun MainScreen(
                 rotate = rotation.toFloat(),
                 distanceInMeters = distanceMeters,
                 modifier = Modifier.absoluteOffset(offset.x.pxToDp(), offset.y.pxToDp()),
-            ) { Image(painterResource(Res.drawable.location_dot_small), null) }
+            )
         }
 
         Box(Modifier
